@@ -12,8 +12,8 @@
   </script>
   <link rel="stylesheet" href="tokens.css?v=c61a04710a9b">
   <link rel="stylesheet" href="docs/design/assets/fonts.css?v=cec7bf09795d">
-  <link rel="stylesheet" href="docs/design/showcase.css?v=2bfa16ff7e53">
-  <script defer src="docs/design/showcase.js?v=32e89d0b9aec"></script>
+  <link rel="stylesheet" href="docs/design/showcase.css?v=a534db23fdea">
+  <script defer src="docs/design/showcase.js?v=6857f381a178"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -260,7 +260,7 @@
             <div class="tabs auth-tabs" role="tablist" aria-label="Доступ к аккаунту">
               <button type="button" role="tab" id="tab-auth-login" aria-controls="panel-auth-login" aria-selected="true"><svg class="icon" aria-hidden="true"><use href="#icon-sign-in"></use></svg><span>Вход</span></button>
               <button type="button" role="tab" id="tab-auth-register" aria-controls="panel-auth-register" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#icon-user-plus"></use></svg><span>Регистрация</span></button>
-              <button type="button" role="tab" id="tab-auth-recover" aria-controls="panel-auth-recover" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#icon-key"></use></svg><span>Восстановление</span></button>
+              <button type="button" role="tab" id="tab-auth-recover" hidden aria-controls="panel-auth-recover" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#icon-key"></use></svg><span>Восстановление</span></button>
             </div>
             <div class="tab-panels auth-panels">
               <div class="tab-panel" id="panel-auth-login" role="tabpanel" aria-labelledby="tab-auth-login" data-active="true" tabindex="0">
@@ -307,7 +307,7 @@
                   <form id="auth-reset-form" method="dialog" novalidate data-auth-form="reset">
                     <div class="error-summary" tabindex="-1" hidden></div>
                     <div class="field"><label for="auth-reset-password">Новый пароль</label><div class="auth-password"><input id="auth-reset-password" autocapitalize="none" spellcheck="false" type="password" autocomplete="new-password" required aria-describedby="auth-reset-password-hint auth-reset-password-error"><button class="btn" type="button" data-password-toggle="auth-reset-password" aria-label="Показать пароль" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg></button></div><p class="small secondary" id="auth-reset-password-hint">В примере: от 15 символов. Пробелы разрешены.</p><p class="field-error" id="auth-reset-password-error" hidden></p></div>
-                    <button class="btn primary auth-submit" type="submit">Сохранить пароль</button>
+                    <div class="field"><label for="auth-reset-confirm">Повторите новый пароль</label><div class="auth-password"><input id="auth-reset-confirm" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false" required aria-describedby="auth-reset-confirm-error"><button class="btn" type="button" data-password-toggle="auth-reset-confirm" aria-label="Показать повтор пароля" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg></button></div><p id="auth-reset-confirm-error" class="field-error" hidden></p></div><button class="btn primary auth-submit" type="submit">Сохранить пароль</button>
                   </form>
                 </div>
                 <button class="btn auth-text-button" type="button" id="auth-recovery-back">Вернуться ко входу</button>
@@ -323,7 +323,7 @@
             <div class="auth-note"><h3>Без обязательного email</h3><p class="small secondary">Google, Яндекс, Telegram и Kick можно использовать без дополнительного адреса. Повторный вход — через тот же сервис.</p></div>
 
             <div class="auth-note"><h3>Письмо и новый пароль</h3><p class="small secondary">После регистрации можно подтвердить адрес в примере. После запроса восстановления — открыть демонстрационную ссылку и задать новый пароль.</p></div>
-            <label class="choice-row"><input type="checkbox" id="auth-timezone-unavailable"><span>Часовой пояс не определён (демо)</span></label><button class="btn" type="button" id="auth-clear">Сбросить пример</button>
+            <fieldset class="choice-group auth-config"><legend>Подключённые сервисы (демо)</legend><p class="small secondary">Это флаги примера. Настоящие ключи задаются только на сервере.</p><label class="choice-row"><input type="checkbox" data-auth-service="google" checked><span>Google</span></label><label class="choice-row"><input type="checkbox" data-auth-service="yandex" checked><span>Яндекс ID</span></label><label class="choice-row"><input type="checkbox" data-auth-service="telegram" checked><span>Telegram</span></label><label class="choice-row"><input type="checkbox" data-auth-service="kick" checked><span>Kick</span></label></fieldset><label class="choice-row"><input type="checkbox" id="auth-timezone-unavailable"><span>Часовой пояс не определён (демо)</span></label><button class="btn" type="button" id="auth-clear">Сбросить пример</button>
           </aside>
         </div>
       </section>

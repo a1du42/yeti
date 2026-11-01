@@ -137,10 +137,10 @@
     // CSS crossfade is interruptible; selection and accessibility update immediately.
   }
   tabs.forEach(tab => {
-    const groupTabs = [...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')];
-    const index = groupTabs.indexOf(tab);
     tab.addEventListener('click', () => { selectTab(tab); syncAccountTab(tab); });
     tab.addEventListener('keydown', event => {
+      const groupTabs = [...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')].filter(item => !item.hidden);
+      const index = groupTabs.indexOf(tab);
       let next;
       if (event.key === 'ArrowRight') next = (index + 1) % groupTabs.length;
       if (event.key === 'ArrowLeft') next = (index - 1 + groupTabs.length) % groupTabs.length;
@@ -589,7 +589,7 @@
   function validateAuthField(input) {
     let error = '';
     if (!input.value) error = input.tagName === 'SELECT' ? 'Выберите часовой пояс.' : input.type === 'email' ? 'Укажите электронную почту.' : 'Введите пароль.';
-    else if (input.id === 'auth-register-confirm' && input.value !== byId('auth-register-password').value) error = 'Пароли не совпадают. Повторите пароль ещё раз.';
+    else if (['auth-register-confirm', 'auth-reset-confirm'].includes(input.id) && input.value !== byId(input.id.replace('-confirm', '-password')).value) error = 'Пароли не совпадают. Повторите пароль ещё раз.';
     else if (input.type === 'email' && input.validity.typeMismatch) error = 'Укажите адрес в формате name@example.com.';
     else if (input.autocomplete === 'new-password' && [...input.value].length < 15) error = 'В примере нужно не менее 15 символов. Можно использовать фразу с пробелами.';
     const message = byId(input.id + '-error');
@@ -625,6 +625,10 @@
   }
   function showAuthTab(name) {
     clearAuthFeedback();
+    const recovery = name === 'recover';
+    byId('tab-auth-login').hidden = recovery;
+    byId('tab-auth-register').hidden = recovery;
+    byId('tab-auth-recover').hidden = !recovery;
     selectTab(byId('tab-auth-' + name), true);
   }
   function resetRecovery() {
@@ -636,7 +640,10 @@
       input.addEventListener('blur', () => { validateAuthField(input); updateAuthSummary(form); });
       input.addEventListener('input', () => {
         clearAuthFeedback();
-        if (input.id === 'auth-register-password' && byId('auth-register-confirm').hasAttribute('aria-invalid')) validateAuthField(byId('auth-register-confirm'));
+        if (['auth-register-password', 'auth-reset-password'].includes(input.id)) {
+          const confirmation = byId(input.id.replace('-password', '-confirm'));
+          if (confirmation.hasAttribute('aria-invalid')) validateAuthField(confirmation);
+        }
         if (input.hasAttribute('aria-invalid')) validateAuthField(input);
         updateAuthSummary(form);
       });
@@ -677,7 +684,7 @@
     const visible = input.type === 'password';
     input.type = visible ? 'text' : 'password';
     button.querySelector('use').setAttribute('href', visible ? '#icon-eye-slash' : '#icon-eye');
-    button.setAttribute('aria-label', (visible ? 'Скрыть ' : 'Показать ') + (input.id === 'auth-register-confirm' ? 'повтор пароля' : 'пароль'));
+    button.setAttribute('aria-label', (visible ? 'Скрыть ' : 'Показать ') + (input.id.endsWith('-confirm') ? 'повтор пароля' : 'пароль'));
     button.setAttribute('aria-pressed', String(visible));
   }));
   auth.querySelectorAll('[data-auth-provider]').forEach(button => button.addEventListener('click', () => {
@@ -724,11 +731,31 @@
       form.querySelectorAll('input, select').forEach(input => { input.removeAttribute('aria-invalid'); byId(input.id + '-error').hidden = true; });
     });
     auth.querySelectorAll('[data-password-toggle]').forEach(button => {
-      byId(button.dataset.passwordToggle).type = 'password'; button.querySelector('use').setAttribute('href', '#icon-eye'); button.setAttribute('aria-label', button.dataset.passwordToggle === 'auth-register-confirm' ? 'Показать повтор пароля' : 'Показать пароль'); button.setAttribute('aria-pressed', 'false');
+      byId(button.dataset.passwordToggle).type = 'password'; button.querySelector('use').setAttribute('href', '#icon-eye'); button.setAttribute('aria-label', button.dataset.passwordToggle.endsWith('-confirm') ? 'Показать повтор пароля' : 'Показать пароль'); button.setAttribute('aria-pressed', 'false');
     });
+    auth.querySelectorAll('[data-auth-service]').forEach(control => { control.checked = true; authProviderAvailability[control.dataset.authService] = true; }); updateAuthProviders();
     byId('auth-timezone-unavailable').checked = false; updateAuthTimezone();
     scenario.value = 'ok'; showAuthTab('login');
   });
+  // Public availability flags only. Production derives these from server configuration.
+  const authProviderAvailability = { google: true, yandex: true, telegram: true, kick: true };
+  const providerKeys = { 'Google': 'google', 'Яндекс ID': 'yandex', 'Telegram': 'telegram', 'Kick': 'kick' };
+  function updateAuthProviders() {
+    clearAuthFeedback(); closeHelp();
+    auth.querySelectorAll('.auth-providers').forEach(group => {
+      const buttons = [...group.querySelectorAll('[data-auth-provider]')];
+      buttons.forEach(button => { button.hidden = authProviderAvailability[providerKeys[button.dataset.authProvider]] !== true; });
+      const count = buttons.filter(button => !button.hidden).length;
+      group.hidden = count === 0;
+      group.style.setProperty('--auth-provider-columns', String(Math.min(4, Math.max(1, count))));
+      group.nextElementSibling.hidden = count === 0;
+    });
+  }
+  auth.querySelectorAll('[data-auth-service]').forEach(control => {
+    control.checked = authProviderAvailability[control.dataset.authService] === true;
+    control.addEventListener('change', () => { authProviderAvailability[control.dataset.authService] = control.checked; updateAuthProviders(); });
+  });
+  updateAuthProviders();
   const timezoneSelect = byId('auth-register-timezone');
   let detectedTimezone = '';
   try { detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) {}
