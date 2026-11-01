@@ -540,6 +540,7 @@
   const auth = byId('auth');
   const authForms = [...auth.querySelectorAll('[data-auth-form]')];
   const scenario = byId('auth-scenario');
+  const demoProviderAccounts = new Set();
   let authTimer;
   let authPending;
   function authMessage(text, kind = 'neutral') {
@@ -588,7 +589,8 @@
   }
   function validateAuthField(input) {
     let error = '';
-    if (!input.value) error = input.tagName === 'SELECT' ? 'Выберите часовой пояс.' : input.type === 'email' ? 'Укажите электронную почту.' : 'Введите пароль.';
+    if (input.id === 'auth-register-name' && !input.value.trim()) error = 'Введите имя.';
+    else if (!input.value) error = input.tagName === 'SELECT' ? 'Выберите часовой пояс.' : input.type === 'email' ? 'Укажите электронную почту.' : 'Введите пароль.';
     else if (['auth-register-confirm', 'auth-reset-confirm'].includes(input.id) && input.value !== byId(input.id.replace('-confirm', '-password')).value) error = 'Пароли не совпадают. Повторите пароль ещё раз.';
     else if (input.type === 'email' && input.validity.typeMismatch) error = 'Укажите адрес в формате name@example.com.';
     else if (input.autocomplete === 'new-password' && [...input.value].length < 15) error = 'В примере нужно не менее 15 символов. Можно использовать фразу с пробелами.';
@@ -694,7 +696,11 @@
       if (outcome === 'cancel') authMessage('Пример: вход через ' + button.dataset.authProvider + ' отменён. Попробуйте снова или выберите другой способ.');
       else if (outcome === 'error') authMessage('Пример: не удалось войти через ' + button.dataset.authProvider + '. Попробуйте снова или выберите другой способ.', 'error');
       else {
-        const text = 'Демонстрация: вход через ' + button.dataset.authProvider + ' без обязательного email. Сервис не подключён, реальная сессия не создана.';
+        const firstLogin = !demoProviderAccounts.has(button.dataset.authProvider);
+        demoProviderAccounts.add(button.dataset.authProvider);
+        const text = firstLogin
+          ? 'Демонстрация: при первом входе через ' + button.dataset.authProvider + ' аккаунт создан автоматически. Реальный аккаунт и сессия не создавались.'
+          : 'Демонстрация: повторный вход через ' + button.dataset.authProvider + ' в существующий аккаунт. Реальная сессия не создавалась.';
         authMessage(text, 'success'); notify(text);
       }
     });
@@ -725,7 +731,7 @@
   });
   byId('auth-recovery-back').addEventListener('click', () => { resetRecovery(); showAuthTab('login'); });
   byId('auth-clear').addEventListener('click', () => {
-    clearAuthFeedback(); resetRecovery();
+    clearAuthFeedback(); resetRecovery(); demoProviderAccounts.clear();
     authForms.forEach(form => {
       form.reset(); form.querySelector('.error-summary').hidden = true;
       form.querySelectorAll('input, select').forEach(input => { input.removeAttribute('aria-invalid'); byId(input.id + '-error').hidden = true; });
