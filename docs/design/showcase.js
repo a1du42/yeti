@@ -84,6 +84,7 @@
     clearTimeout(noticeTimer);
     if (!notice.contains(document.activeElement)) noticeReturnFocus = document.activeElement;
     byId('notification-text').textContent = text;
+    byId('notification-symbol').style.visibility = manualCopy ? 'hidden' : 'visible';
     byId('copy-fallback').hidden = !manualCopy;
     notice.hidden = false;
     reveal(notice);
@@ -118,10 +119,14 @@
       const active = tab === selected;
       tab.setAttribute('aria-selected', String(active));
       tab.tabIndex = active ? 0 : -1;
-      byId(tab.getAttribute('aria-controls')).hidden = !active;
+      const panel = byId(tab.getAttribute('aria-controls'));
+      panel.dataset.active = String(active);
+      panel.inert = !active;
+      panel.setAttribute('aria-hidden', String(!active));
+      panel.tabIndex = active ? 0 : -1;
     });
     if (focus) selected.focus();
-    reveal(byId(selected.getAttribute('aria-controls')), '--dur-base', 'none');
+    // CSS crossfade is interruptible; selection and accessibility update immediately.
   }
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => selectTab(tab));
@@ -203,9 +208,9 @@
   document.addEventListener('scroll', closeHelp, { passive: true, capture: true });
 
   const dialog = byId('example-dialog');
-  document.querySelector('[data-open-dialog]').addEventListener('click', () => {
+  document.querySelectorAll('[data-open-dialog]').forEach(button => button.addEventListener('click', () => {
     closeHelp(); closeNotice(); dialog.showModal(); reveal(dialog, '--dur-panel', 'scale(.98)');
-  });
+  }));
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => dialog.close()));
   dialog.addEventListener('close', () => activeAnimations.get(dialog)?.cancel());
   document.addEventListener('keydown', event => {
@@ -251,7 +256,8 @@
     saveTimer = setTimeout(() => {
       if (operation !== currentOperation) return;
       resetPending();
-      byId('form-result').textContent = formSnapshot() === savedValue ? 'Готово. Пример сохранения завершён локально.' : 'Пример завершён. Настройки изменены после нажатия; сохраните их снова.';
+      if (formSnapshot() === savedValue) notify('Готово. Пример сохранения завершён локально.');
+      else byId('form-result').textContent = 'Пример завершён. Настройки изменены после нажатия; сохраните их снова.';
     }, 650);
   });
   form.addEventListener('reset', () => {
@@ -272,7 +278,7 @@
   byId('play-motion').addEventListener('click', () => {
     const element = byId('motion-object');
     activeAnimations.get(element)?.cancel();
-    const time = reduced() ? 100 : Math.min(400, Number(motionDuration.value));
+    const time = reduced() ? 100 : Math.min(duration('--dur-max'), Number(motionDuration.value));
     const frames = reduced() ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }];
     const animation = element.animate(frames, { duration: time, easing: css('--ease-out') });
     activeAnimations.set(element, animation);

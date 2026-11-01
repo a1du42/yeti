@@ -5,13 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Дизайн-система · YETI STREAM</title>
+  <!-- Start loading the six specimen font faces before stylesheet discovery. -->
+  <link rel="preload" href="docs/design/assets/fonts/ibm-plex-sans-400-0.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="docs/design/assets/fonts/ibm-plex-sans-500-1.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="docs/design/assets/fonts/ibm-plex-sans-600-2.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="docs/design/assets/fonts/manrope-600-3.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="docs/design/assets/fonts/manrope-700-4.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="docs/design/assets/fonts/nunito-sans-800-5.ttf" as="font" type="font/ttf" crossorigin>
   <script>
     try { const theme = localStorage.getItem('yeti-design-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch (_) {}
   </script>
-  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="tokens.css?v=f64b9d727bbd">
   <link rel="stylesheet" href="docs/design/assets/fonts.css">
-  <link rel="stylesheet" href="docs/design/showcase.css">
-  <script defer src="docs/design/showcase.js"></script>
+  <link rel="stylesheet" href="docs/design/showcase.css?v=4f1ce8183f25">
+  <script defer src="docs/design/showcase.js?v=e4798a5c9962"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -59,7 +66,7 @@
       <section id="overview" class="intro section">
         <div class="intro-copy"><p class="eyebrow">YETI STREAM / дизайн-система</p><h1>Графит и лёд</h1><p class="lead">Спокойный интерфейс.<br>Понятные действия. Короткие переходы.</p><p class="secondary intro-note">Здесь можно посмотреть и попробовать элементы будущего приложения. Все примеры работают локально.</p><a class="text-link" href="#components">Перейти к компонентам <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a></div>
         <div class="identity-sample"><span class="identity-mark"><img src="logo.svg" width="144" height="144" alt="Знак YETI STREAM: йети над синим потоком"></span><span class="wordmark">YETI STREAM</span><span class="small secondary">Nunito Sans ExtraBold · 800</span></div>
-        <dl class="principles"><div><dt>Один акцент</dt><dd>Синий направляет внимание</dd></div><div><dt>Две темы</dt><dd>Общая структура и контраст</dd></div><div><dt>До 400 мс</dt><dd>Движение объясняет действие</dd></div></dl>
+        <dl class="principles"><div><dt>Один акцент</dt><dd>Синий направляет внимание</dd></div><div><dt>Две темы</dt><dd>Общая структура и контраст</dd></div><div><dt>До 800 мс</dt><dd>Движение объясняет действие</dd></div></dl>
       </section>
 
       <section id="palette" class="section">
@@ -81,7 +88,7 @@
       </section>
 
       <section id="typography" class="section">
-        <div class="section-heading"><h2>Типографика</h2><p>Три чёткие роли. Кириллица, спокойный ритм и читаемые цифры.</p></div>
+        <div class="section-heading"><h2>Типографика</h2><p>Три чёткие роли. Все шесть используемых начертаний загружаются заранее при открытии стенда, без ожидания прокрутки или клика.</p></div>
         <div class="type-row"><div><h3>Название бренда</h3><p class="small secondary">Nunito Sans · ExtraBold 800</p></div><div><p class="wordmark type-wordmark">YETI STREAM</p><p class="small secondary">Только текстовая часть логотипа</p></div></div>
         <div class="type-row"><div><h3>Заголовки</h3><p class="small secondary">Manrope · 600 / 700</p></div><div><p class="type-heading">Всё важное на своём месте</p><p class="small secondary">32/40 px на широком экране · 24/30 px на узком</p></div></div>
         <div class="type-row"><div><h3>Интерфейс</h3><p class="small secondary">IBM Plex Sans · 400 / 500 / 600</p></div><div><p class="type-body">Выберите параметры и проверьте результат.</p><p class="type-numbers">Аа Бб Вв Ёё · 0123456789</p><p class="small secondary">Основной текст 16/24 px · подписи 14/20 px</p></div></div>
@@ -105,11 +112,13 @@
           </div>
         </div>
         <div class="component-split">
-          <div class="sample-panel"><h3>Статусы</h3><div class="badge-row"><span class="badge neutral">Ожидает</span><span class="badge success"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>Готово</span><span class="badge warning">Нужно проверить</span><span class="badge danger">Ошибка</span></div><p class="small secondary">Текст сохраняет смысл без цвета.</p></div>
-          <div class="sample-panel"><h3>Вкладки</h3><div class="tabs" role="tablist" aria-label="Пример вкладок"><button type="button" role="tab" id="tab-details" aria-controls="panel-details" aria-selected="true">Детали</button><button type="button" role="tab" id="tab-history" aria-controls="panel-history" aria-selected="false" tabindex="-1">История</button></div><div class="tab-panel" id="panel-details" role="tabpanel" aria-labelledby="tab-details" tabindex="0"><p>Параметры и доступные действия собраны рядом.</p></div><div class="tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-history" tabindex="0" hidden><p>Здесь будут подтверждённые события. Пример не содержит данных заказов.</p></div></div>
+          <div class="sample-panel"><h3>Статусы</h3><div class="badge-row"><span class="badge neutral"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-stack"></use></svg>Ожидает</span><span class="badge success"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>Готово</span><span class="badge warning"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-warning-circle"></use></svg>Нужно проверить</span><span class="badge danger"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-x"></use></svg>Ошибка</span></div><p class="small secondary">Текст сохраняет смысл без цвета.</p></div>
+          <div class="sample-panel"><h3>Вкладки</h3><p class="small secondary">На всю ширину, с иконкой и подписью.</p><div class="tabs" role="tablist" aria-label="Пример вкладок"><button type="button" role="tab" id="tab-details" aria-controls="panel-details" aria-selected="true"><svg class="icon" aria-hidden="true"><use href="#icon-sliders-horizontal"></use></svg><span>Детали</span></button><button type="button" role="tab" id="tab-history" aria-controls="panel-history" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#icon-stack"></use></svg><span>История</span></button></div><div class="tab-panels"><div class="tab-panel" data-active="true" id="panel-details" role="tabpanel" aria-labelledby="tab-details" tabindex="0"><p>Параметры и доступные действия собраны рядом.</p></div><div class="tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-history" tabindex="-1" data-active="false" aria-hidden="true" inert><p>Здесь будут подтверждённые события. Пример не содержит данных заказов.</p></div></div></div>
         </div>
       </section>
 
+<div class="sample-panel table-example"><h3>Таблица и действия</h3><table class="example-table"><caption>Демонстрационные записи. Справа: открыть пример диалога и скопировать название.</caption><thead><tr><th scope="col">Запись и статус</th><th scope="col" class="table-actions">Действия</th></tr></thead><tbody><tr><th scope="row"><span class="record-name">Пример 01</span><span class="badge success"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>Готово</span></th><td class="table-actions"><div><button class="btn icon-button" type="button" data-open-dialog aria-label="Открыть пример диалога для Пример 01"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg></button><button class="btn icon-button" type="button" data-copy="Пример 01" aria-label="Скопировать название: Пример 01"><svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div></td></tr><tr><th scope="row"><span class="record-name">Пример 02</span><span class="badge neutral"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-stack"></use></svg>Ожидает</span></th><td class="table-actions"><div><button class="btn icon-button" type="button" data-open-dialog aria-label="Открыть пример диалога для Пример 02"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg></button><button class="btn icon-button" type="button" data-copy="Пример 02" aria-label="Скопировать название: Пример 02"><svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div></td></tr><tr><th scope="row"><span class="record-name">Пример 03</span><span class="badge warning"><svg class="icon small-icon" aria-hidden="true"><use href="#icon-warning-circle"></use></svg>Нужно проверить</span></th><td class="table-actions"><div><button class="btn icon-button" type="button" data-open-dialog aria-label="Открыть пример диалога для Пример 03"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg></button><button class="btn icon-button" type="button" data-copy="Пример 03" aria-label="Скопировать название: Пример 03"><svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div></td></tr></tbody></table></div>
+        <div class="sample-panel notification-example"><h3>Уведомление об успехе</h3><p class="small secondary">Появляется снизу по центру. Ошибки ввода остаются рядом с полями.</p><button class="btn" type="button" data-feedback="Пример: изменения сохранены.">Показать уведомление</button></div>
       <section id="forms" class="section">
         <div class="section-heading"><h2>Формы и справка</h2><p>Подпись над полем. Ошибка рядом с причиной. Пояснение по знаку вопроса.</p></div>
         <div class="component-split form-layout">
@@ -132,9 +141,9 @@
         <div class="section-heading"><h2>Движение по делу</h2><p>Нажатие, появление, смена состояния. Без отскока и бесконечных циклов.</p></div>
         <div class="motion-workbench">
           <div class="motion-stage"><div id="motion-object" class="motion-object"><svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg><span>Готово</span></div><span class="small secondary">Результат доступен сразу</span></div>
-          <div class="motion-controls"><label for="motion-duration">Длительность</label><select id="motion-duration"><option value="120">120 мс · короткий отклик</option><option value="220" selected>220 мс · смена состояния</option><option value="320">320 мс · панель</option><option value="400">400 мс · предел</option></select><label class="check-row"><input type="checkbox" id="reduce-motion">Уменьшить движение</label><button class="btn primary" id="play-motion" type="button"><svg class="icon" aria-hidden="true"><use href="#icon-cursor-click"></use></svg>Повторить переход</button><p id="motion-description" class="small secondary" role="status">Появление: 220 мс, смещение 8 px.</p></div>
+          <div class="motion-controls"><label for="motion-duration">Длительность</label><select id="motion-duration"><option value="240">240 мс · короткий отклик</option><option value="440" selected>440 мс · смена состояния</option><option value="640">640 мс · панель</option><option value="800">800 мс · предел</option></select><label class="check-row"><input type="checkbox" id="reduce-motion">Уменьшить движение</label><button class="btn primary" id="play-motion" type="button"><svg class="icon" aria-hidden="true"><use href="#icon-cursor-click"></use></svg>Повторить переход</button><p id="motion-description" class="small secondary" role="status">Появление: 440 мс, смещение 8 px.</p></div>
         </div>
-        <div class="motion-summary"><div><strong>80 мс</strong><span>Нажатие</span></div><div><strong>120 мс</strong><span>Подсказка</span></div><div><strong>280 мс</strong><span>Диалог</span></div><div><strong>320 мс</strong><span>Панель</span></div></div>
+        <div class="motion-summary"><div><strong>160 мс</strong><span>Нажатие</span></div><div><strong>240 мс</strong><span>Подсказка</span></div><div><strong>560 мс</strong><span>Диалог</span></div><div><strong>640 мс</strong><span>Панель</span></div></div>
         <p class="spec-note">Системная настройка уменьшения движения учитывается всегда. В этом режиме остаётся только появление до 100 мс.</p>
       </section>
 
@@ -149,8 +158,8 @@
 
   <div id="help-channel" class="help-tooltip" role="tooltip" popover="manual">Укажите ссылку на канал. Проверьте её перед сохранением, чтобы выбрать нужный канал.</div>
   <div id="help-guidance" class="help-tooltip" role="tooltip" popover="manual">Откройте пояснение по знаку вопроса рядом с названием. Оно подскажет, что можно сделать и как получить результат.</div>
-  <dialog id="example-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="dialog-top"><h2 id="dialog-title">Изменения готовы</h2><button class="btn icon-button ghost" type="button" data-close-dialog aria-label="Закрыть диалог"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button></div><p id="dialog-description">Это пример диалога. Проверьте, как он открывается, удерживает фокус и возвращает его к кнопке после закрытия.</p><div class="dialog-example"><svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg><div><strong>Всё на своём месте</strong><p class="small secondary">Появление 280 мс. Reduced motion до 100 мс.</p></div></div><div class="button-row dialog-actions"><button class="btn" type="button" data-close-dialog autofocus>Закрыть</button></div></dialog>
-  <div class="notification" id="notification" hidden><span id="notification-text" role="status"></span><button class="btn ghost icon-button" id="close-notification" type="button" aria-label="Закрыть уведомление"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button><div id="copy-fallback" hidden><label for="copy-value">Скопируйте выделенный текст</label><input id="copy-value" readonly></div></div>
+  <dialog id="example-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="dialog-top"><h2 id="dialog-title">Изменения готовы</h2><button class="btn icon-button ghost" type="button" data-close-dialog aria-label="Закрыть диалог"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button></div><p id="dialog-description">Это пример диалога. Проверьте, как он открывается, удерживает фокус и возвращает его к кнопке после закрытия.</p><div class="dialog-example"><svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg><div><strong>Всё на своём месте</strong><p class="small secondary">Появление 560 мс. Reduced motion до 100 мс.</p></div></div><div class="button-row dialog-actions"><button class="btn" type="button" data-close-dialog autofocus>Закрыть</button></div></dialog>
+  <div class="notification" id="notification" hidden><span id="notification-symbol"><svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg></span><span id="notification-text" role="status"></span><button class="btn ghost icon-button" id="close-notification" type="button" aria-label="Закрыть уведомление"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button><div id="copy-fallback" hidden><label for="copy-value">Скопируйте выделенный текст</label><input id="copy-value" readonly></div></div>
   <noscript><p class="noscript">Для переключения темы и интерактивных примеров включите JavaScript. Палитра и типографика доступны без него.</p></noscript>
 </body>
 </html>
