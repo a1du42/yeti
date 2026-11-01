@@ -19,6 +19,8 @@ ui-ux-pro-max CLI запущен для `streaming services dashboard minimal`, 
 
 Motion MCP использован для поиска рекомендаций `transition duration reduced motion` и `animate duration ease`, получены ссылки на tween и easing. Точные параметры дополнительно сверены с [документацией animate](https://motion.dev/docs/animate). Код компонентов и платные ресурсы не запрашивались, пакеты не устанавливались.
 
+При подготовке HTML-витрины дополнительно использован поиск Motion MCP по reduced motion и CSS-переходам. Для локальных документационных образцов достаточно CSS и Web Animations API: библиотека Motion не установлена, решение о стеке приложения остаётся открытым.
+
 ## Официальные материалы
 
 - [Motion animate](https://motion.dev/docs/animate): длительность, easing и управление анимацией. Проектный выбор: tween для жёсткого лимита 400 мс.
@@ -29,6 +31,8 @@ Motion MCP использован для поиска рекомендаций `
 - [Google Fonts: Manrope](https://github.com/google/fonts/blob/main/ofl/manrope/METADATA.pb) и [IBM Plex Sans](https://github.com/google/fonts/blob/main/ofl/ibmplexsans/METADATA.pb): семейства, OFL и кириллические наборы.
 - [Nunito Sans](https://fonts.google.com/specimen/Nunito+Sans) выбран пользователем для текстовой части логотипа в ExtraBold 800. [Метаданные Google Fonts](https://github.com/google/fonts/blob/main/ofl/nunitosans/METADATA.pb) подтверждают семейство, кириллицу, OFL и диапазон веса, включающий 800.
 - [Phosphor](https://phosphoricons.com/): выбранная семья иконок; конкретный пакет зависит от будущего стека.
+- [Официальные SVG Phosphor](https://github.com/phosphor-icons/core): исходники Regular встроены в HTML-витрину; [лицензия](assets/PHOSPHOR-LICENSE.txt) сохранена локально.
+- [MDN: dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) и [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API): нативные механизмы диалога и верхнего слоя справки в документационной витрине.
 - [Web Vitals](https://web.dev/articles/vitals): определения LCP, INP, CLS и оценка на p75. Числа в документах проекта являются целями будущего измерения.
 
 ## Разрешение противоречий навыков
@@ -38,3 +42,5 @@ Motion MCP использован для поиска рекомендаций `
 Глобальный overflow clipping не используется как способ скрыть дефект адаптации. Равномерные строки таблицы допустимы. Семейства шрифтов имеют подтверждённую кириллицу. Nunito Sans используется по прямому выбору пользователя только в логотипе, независимо от общих рекомендаций навыков избегать его как шрифта по умолчанию. Белый текст CTA является документированным исключением из эстетического ограничения чистого белого.
 
 Состав услуг и правила денег не выводятся из референса. Навыки не требуют добавлять встроенного ИИ-помощника в продукт. Текущий результат не проходил UI-проверки несуществующего приложения.
+
+Локальные шрифты HTML-витрины извлечены из ранее подготовленного visual-spec.svg с сохранением [OFL-лицензий](assets/FONT-LICENSES.txt). Это документационные ресурсы; подключение и оптимизация шрифтов рабочей сборки будут рассмотрены после выбора стека.
