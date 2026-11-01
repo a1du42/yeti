@@ -46,6 +46,7 @@
     <nav id="navigation" class="navigation" aria-label="Разделы">
       <a href="#overview" aria-current="location"><svg class="icon" aria-hidden="true"><use href="#icon-squares-four"></use></svg>Обзор</a>
       <a href="#palette"><svg class="icon" aria-hidden="true"><use href="#icon-palette"></use></svg>Палитра</a>
+      <a href="#mobile"><svg class="icon" aria-hidden="true"><use href="#icon-list"></use></svg>На телефоне</a>
       <a href="#typography"><svg class="icon" aria-hidden="true"><use href="#icon-text-aa"></use></svg>Типографика</a>
       <a href="#components"><svg class="icon" aria-hidden="true"><use href="#icon-stack"></use></svg>Компоненты</a>
       <a href="#forms"><svg class="icon" aria-hidden="true"><use href="#icon-sliders-horizontal"></use></svg>Формы и справка</a>
@@ -134,6 +135,54 @@
         <div class="intro-copy"><p class="eyebrow">YETI STREAM / дизайн-система</p><h1>Графит и лёд</h1><p class="lead">Спокойный интерфейс.<br>Понятные действия. Короткие переходы.</p><p class="secondary intro-note">Здесь можно посмотреть и попробовать элементы будущего приложения. Все примеры работают локально.</p><a class="text-link" href="#components">Перейти к компонентам <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a></div>
         <div class="identity-sample"><span class="identity-logo"><img class="logo-light" src="logo.svg" width="1320" height="560" alt="YETI STREAM: йети над синим потоком"><img class="logo-dark" src="logo-dark.svg" width="1320" height="560" alt="YETI STREAM: йети над синим потоком"></span><span class="small secondary">Rubik Bold · 700 · надпись в кривых</span></div>
         <dl class="principles"><div><dt>Один акцент</dt><dd>Синий направляет внимание</dd></div><div><dt>Две темы</dt><dd>Общая структура и контраст</dd></div><div><dt>До 800 мс</dt><dd>Движение объясняет действие</dd></div></dl>
+      </section>
+
+      <section id="mobile" class="section" aria-labelledby="mobile-heading">
+        <div class="section-heading"><p class="eyebrow">Мобильный интерфейс</p><h2 id="mobile-heading">Всё нужное — под большим пальцем</h2><p>Одна колонка, спокойные поверхности и меню внизу. Попробуйте переключить разделы и прокрутить экран внутри телефона. Это локальный образец, состав меню — проектное предложение.</p></div>
+        <div class="mobile-workbench">
+          <div class="mobile-spec">
+            <h3>Графит и лёд · mobile</h3><p class="secondary">Тот же Rubik, холодный синий акцент и линейные иконки. Без отдельной визуальной темы для телефона.</p>
+            <div class="field"><label for="phone-width">Ширина экрана</label><select id="phone-width"><option value="320">320 px · компактный</option><option value="390" selected>390 px · стандартный</option><option value="430">430 px · широкий</option></select><p class="small secondary" id="phone-size-note" role="status">390 CSS px. Если места меньше, образец сужается без масштабирования текста.</p></div>
+            <div class="field"><label for="phone-state">Состояние списка заказов</label><select id="phone-state"><option value="sample">Демонстрационные строки</option><option value="empty">Пустой список</option><option value="error">Ошибка загрузки</option></select><p class="small secondary">Выбор откроет «Заказы» в телефоне.</p></div>
+            <div class="phone-theme-options" role="group" aria-label="Тема витрины"><button class="btn" type="button" data-theme-option="light" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#icon-sun"></use></svg>Светлая</button><button class="btn" type="button" data-theme-option="dark" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#icon-moon"></use></svg>Тёмная</button><button class="btn" type="button" data-theme-option="system" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#icon-desktop"></use></svg>Как в системе</button></div>
+            <dl class="mobile-rules"><div><dt>16 px</dt><dd>Отступы от края</dd></div><div><dt>72 px + safe area</dt><dd>Нижняя навигация</dd></div><div><dt>44 × 44 px</dt><dd>Минимальная область нажатия</dd></div></dl>
+            <p class="small secondary">Рамка и системные полосы условные. Это показ компоновки, а не эмуляция ОС, клавиатуры или браузерных панелей.</p><p class="small secondary">Инструкция в проекте: <code>docs/design/mobile.md</code></p>
+          </div>
+          <div class="phone-stage">
+            <div class="phone-frame" id="phone-frame" style="--phone-width: 390px" role="group" aria-label="Демонстрация приложения на телефоне">
+              <div class="phone-system" aria-hidden="true"><span>9:41</span><span class="phone-speaker"></span><span>100%</span></div>
+              <div class="phone-header"><span class="brand-logo"><img class="logo-light" src="logo.svg" width="1320" height="560" alt="YETI STREAM"><img class="logo-dark" src="logo-dark.svg" width="1320" height="560" alt="YETI STREAM"></span><span class="phone-demo-label">Демо</span></div>
+              <div class="phone-scroll" id="phone-scroll" tabindex="0" role="region" aria-label="Содержимое экрана телефона">
+                <div class="phone-panels">
+                  <section class="phone-panel" id="phone-overview" data-active="true" aria-labelledby="phone-overview-heading">
+                    <p class="eyebrow">Рабочее пространство</p><h3 id="phone-overview-heading" tabindex="-1">Обзор</h3><p class="secondary">Выберите услугу или проверьте состояние заказа.</p>
+                    <a class="btn primary" href="#phone-services" data-phone-go="services">Выбрать услугу<svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+                    <div class="phone-section-title"><h4>Последние заказы</h4><a href="#phone-orders" data-phone-go="orders">Все заказы</a></div>
+                    <article class="phone-order"><div class="phone-order-top"><strong>Заказ DEMO-001</strong><svg class="icon" aria-hidden="true"><use href="#icon-receipt"></use></svg></div><span class="badge neutral"><svg class="icon" aria-hidden="true"><use href="#icon-stack"></use></svg>В работе</span><p class="small secondary">Демонстрационный канал</p><a href="#phone-orders" data-phone-go="orders">Открыть список заказов</a></article>
+                    <article class="phone-order"><div class="phone-order-top"><strong>Заказ DEMO-002</strong><svg class="icon" aria-hidden="true"><use href="#icon-receipt"></use></svg></div><span class="badge success"><svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>Завершён</span><p class="small secondary">Демонстрационный канал</p><a href="#phone-orders" data-phone-go="orders">Открыть список заказов</a></article>
+                    <div class="phone-note"><h4>Следующий шаг</h4><p>Параметры и условия выбранной услуги будут показаны до подтверждения заказа.</p></div><p class="small secondary">Все строки и статусы вымышлены. Перечень услуг и условия ещё не определены.</p>
+                  </section>
+                  <section class="phone-panel" id="phone-services" data-active="false" aria-hidden="true" inert aria-labelledby="phone-services-heading">
+                    <p class="eyebrow">Выбор и настройка</p><h3 id="phone-services-heading" tabindex="-1">Услуги</h3><p class="secondary">Здесь можно будет выбрать услугу и настроить заказ.</p><div class="phone-empty"><svg class="icon" aria-hidden="true"><use href="#icon-stack"></use></svg><h4>Каталог ещё не определён</h4><p>В образце нет вымышленных услуг, цен и обещаний результата.</p></div><a class="btn" href="#phone-overview" data-phone-go="overview">Вернуться к обзору</a>
+                  </section>
+                  <section class="phone-panel" id="phone-orders" data-active="false" aria-hidden="true" inert aria-labelledby="phone-orders-heading">
+                    <p class="eyebrow">Состояние выполнения</p><h3 id="phone-orders-heading" tabindex="-1">Заказы</h3><p class="secondary">Состояние и детали каждого заказа.</p>
+                    <div id="phone-order-sample"><p class="small secondary">Демонстрационные данные</p><article class="phone-order"><strong>Заказ DEMO-001</strong><span class="badge neutral"><svg class="icon" aria-hidden="true"><use href="#icon-stack"></use></svg>В работе</span><p class="small secondary">Демонстрационный канал</p></article><article class="phone-order"><strong>Заказ DEMO-002</strong><span class="badge success"><svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>Завершён</span><p class="small secondary">Демонстрационный канал</p></article><p class="small secondary">Обновление и детали появятся после определения модели заказа. Реальных запросов здесь нет.</p></div>
+                    <div id="phone-order-empty" class="phone-empty" hidden><svg class="icon" aria-hidden="true"><use href="#icon-receipt"></use></svg><h4>Заказов пока нет</h4><p>Начните с выбора услуги.</p><a class="btn primary" href="#phone-services" data-phone-go="services">Выбрать услугу</a></div>
+                    <div id="phone-order-error" class="phone-empty phone-error" hidden><svg class="icon" aria-hidden="true"><use href="#icon-warning-circle"></use></svg><h4>Не удалось загрузить заказы</h4><p>Повторите попытку. Это демонстрация ошибки соединения.</p><button class="btn" type="button" id="phone-retry">Повторить</button></div>
+                  </section>
+                  <section class="phone-panel" id="phone-more" data-active="false" aria-hidden="true" inert aria-labelledby="phone-more-heading">
+                    <p class="eyebrow">Личное пространство</p><h3 id="phone-more-heading" tabindex="-1">Ещё</h3><div class="phone-person"><span class="account-avatar" aria-hidden="true">АМ</span><div><strong>Алексей Морозов</strong><p class="small secondary">Демонстрационный аккаунт</p></div></div>
+                    <div class="phone-note"><h4>Настройки и оплата</h4><p>Подробные примеры доступны в витрине аккаунта. Ссылки ниже откроют их за пределами рамки телефона.</p></div><a class="phone-menu-row" href="#account-settings"><svg class="icon" aria-hidden="true"><use href="#icon-gear"></use></svg>Настройки<svg class="icon" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg></a><a class="phone-menu-row" href="#account-payment"><svg class="icon" aria-hidden="true"><use href="#icon-wallet"></use></svg>Оплата<svg class="icon" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg></a><p class="small secondary">Навигация относится только к /app. Другие рабочие зоны имеют собственные меню.</p>
+                  </section>
+                </div>
+              </div>
+              <nav class="phone-bottom-nav" aria-label="Главное меню телефона">
+                <a href="#phone-overview" data-phone-go="overview" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-squares-four"></use></svg><span>Обзор</span></a><a href="#phone-services" data-phone-go="services"><svg class="icon" aria-hidden="true"><use href="#icon-stack"></use></svg><span>Услуги</span></a><a href="#phone-orders" data-phone-go="orders"><svg class="icon" aria-hidden="true"><use href="#icon-receipt"></use></svg><span>Заказы</span></a><a href="#phone-more" data-phone-go="more"><svg class="icon" aria-hidden="true"><use href="#icon-list"></use></svg><span>Ещё</span></a>
+              </nav><div class="phone-home-area" aria-hidden="true"><span></span></div>
+            </div><p class="small secondary phone-caption">Прокрутка внутри экрана · меню всегда внизу</p>
+          </div>
+        </div>
       </section>
 
       <section id="palette" class="section">

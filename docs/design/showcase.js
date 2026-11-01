@@ -48,6 +48,56 @@
   }));
   updateThemeButtons();
 
+  // Phone frame is documentation only; local links never create product routes.
+  const phoneFrame = byId('phone-frame');
+  const phoneScroll = byId('phone-scroll');
+  const phonePanels = [...phoneFrame.querySelectorAll('.phone-panel')];
+  const phonePositions = new Map();
+  let phoneSection = 'overview';
+  function showPhoneSection(name, focus = true) {
+    if (!phonePanels.some(panel => panel.id === 'phone-' + name)) return;
+    phonePositions.set(phoneSection, phoneScroll.scrollTop);
+    phoneSection = name;
+    phonePanels.forEach(panel => {
+      const active = panel.id === 'phone-' + name;
+      panel.dataset.active = String(active);
+      panel.inert = !active;
+      panel.setAttribute('aria-hidden', String(!active));
+      if (active && focus) panel.querySelector('h3').focus({ preventScroll: true });
+    });
+    phoneFrame.querySelectorAll('.phone-bottom-nav a').forEach(link => {
+      if (link.dataset.phoneGo === name) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    phoneScroll.scrollTop = phonePositions.get(name) || 0;
+  }
+  phoneFrame.addEventListener('click', event => {
+    const link = event.target.closest('[data-phone-go]');
+    if (!link) return;
+    event.preventDefault();
+    showPhoneSection(link.dataset.phoneGo);
+  });
+  byId('phone-width').addEventListener('change', event => {
+    phoneFrame.style.setProperty('--phone-width', event.target.value + 'px');
+    byId('phone-size-note').textContent = event.target.value + ' CSS px. Если места меньше, образец сужается без масштабирования текста.';
+  });
+  function updatePhoneOrders() {
+    const state = byId('phone-state').value;
+    for (const name of ['sample', 'empty', 'error']) byId('phone-order-' + name).hidden = name !== state;
+  }
+  byId('phone-state').addEventListener('change', () => {
+    updatePhoneOrders();
+    phonePositions.set('orders', 0);
+    showPhoneSection('orders', false);
+    phoneScroll.scrollTop = 0;
+  });
+  byId('phone-retry').addEventListener('click', () => {
+    byId('phone-state').value = 'sample';
+    updatePhoneOrders();
+    byId('phone-orders-heading').focus({ preventScroll: true });
+    phoneScroll.scrollTop = 0;
+  });
+
   const navigation = byId('navigation');
   const menuToggle = document.querySelector('.menu-toggle');
   function closeNavigation(returnFocus = false) {
