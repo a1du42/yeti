@@ -535,4 +535,195 @@
     animation.finished.then(() => { if (activeAnimations.get(element) === animation) activeAnimations.delete(element); }).catch(() => {});
   });
   describeMotion();
+
+  // Authentication is a local state demonstration. Never send or persist credentials.
+  const auth = byId('auth');
+  const authForms = [...auth.querySelectorAll('[data-auth-form]')];
+  const scenario = byId('auth-scenario');
+  let authTimer;
+  let authPending;
+  function authMessage(text, kind = 'neutral') {
+    byId('auth-result-text').textContent = text;
+    byId('auth-result').dataset.kind = kind;
+    byId('auth-result').querySelector('use').setAttribute('href', kind === 'success' ? '#icon-check-circle' : '#icon-warning-circle');
+    byId('auth-result').hidden = false;
+  }
+  function cancelAuth() {
+    clearTimeout(authTimer);
+    if (authPending) {
+      authPending.button.textContent = authPending.label;
+      authPending.button.disabled = false;
+      authPending.form?.removeAttribute('aria-busy');
+    }
+    authPending = null;
+    byId('auth-cancel').hidden = true;
+    auth.querySelectorAll('[data-auth-provider]').forEach(button => { button.disabled = false; });
+  }
+  function clearAuthFeedback() {
+    cancelAuth();
+    byId('auth-result').hidden = true;
+    byId('auth-open-letter').hidden = true;
+    byId('auth-confirm-email').hidden = true;
+  }
+  function authWait(button, form, finish) {
+    cancelAuth();
+    const outcome = scenario.value;
+    authPending = { button, label: button.textContent, form };
+    button.textContent = 'Проверяем…';
+    button.disabled = true;
+    form?.setAttribute('aria-busy', 'true');
+    auth.querySelectorAll('[data-auth-provider]').forEach(item => { item.disabled = true; });
+    byId('auth-cancel').hidden = false;
+    authMessage('Демонстрация: ожидаем ответ…');
+    authTimer = setTimeout(() => {
+      cancelAuth();
+      if (outcome === 'offline') {
+        authMessage('Пример ошибки соединения. Данные остались в форме. Выберите успешный результат и повторите.', 'error');
+        return;
+      }
+      finish(outcome);
+    }, 650);
+  }
+  function validateAuthField(input) {
+    let error = '';
+    if (!input.value) error = input.type === 'email' ? 'Укажите электронную почту.' : 'Введите пароль.';
+    else if (input.type === 'email' && input.validity.typeMismatch) error = 'Укажите адрес в формате name@example.com.';
+    else if (input.autocomplete === 'new-password' && [...input.value].length < 15) error = 'В примере нужно не менее 15 символов. Можно использовать фразу с пробелами.';
+    const message = byId(input.id + '-error');
+    message.textContent = error;
+    message.hidden = !error;
+    input.setAttribute('aria-invalid', String(Boolean(error)));
+    return error;
+  }
+  function updateAuthSummary(form, focus = false) {
+    const invalid = [...form.querySelectorAll('input[aria-invalid="true"]')];
+    const summary = form.querySelector('.error-summary');
+    const signature = JSON.stringify(invalid.map(input => [input.id, byId(input.id + '-error').textContent]));
+    const changed = summary.dataset.signature !== signature;
+    summary.dataset.signature = signature;
+    if (changed) summary.replaceChildren();
+    summary.hidden = invalid.length < 2;
+    if (invalid.length > 1 && changed) {
+      const title = document.createElement('strong');
+      title.textContent = 'Проверьте поля';
+      const list = document.createElement('ul');
+      invalid.forEach(input => {
+        const item = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#' + input.id;
+        link.textContent = byId(input.id + '-error').textContent;
+        link.addEventListener('click', event => { event.preventDefault(); input.focus(); });
+        item.append(link); list.append(item);
+      });
+      summary.append(title, list);
+    }
+    if (focus) (invalid.length > 1 ? summary : invalid[0])?.focus();
+    return invalid.length === 0;
+  }
+  function showAuthTab(name) {
+    clearAuthFeedback();
+    selectTab(byId('tab-auth-' + name), true);
+  }
+  function resetRecovery() {
+    byId('auth-recovery-request').hidden = false;
+    byId('auth-recovery-reset').hidden = true;
+  }
+  authForms.forEach(form => {
+    form.querySelectorAll('input').forEach(input => {
+      input.addEventListener('blur', () => { validateAuthField(input); updateAuthSummary(form); });
+      input.addEventListener('input', () => {
+        clearAuthFeedback();
+        if (input.hasAttribute('aria-invalid')) { validateAuthField(input); updateAuthSummary(form); }
+      });
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (authPending) return;
+      clearAuthFeedback();
+      form.querySelectorAll('input').forEach(validateAuthField);
+      if (!updateAuthSummary(form, true)) return;
+      const mode = form.dataset.authForm;
+      authWait(form.querySelector('[type="submit"]'), form, outcome => {
+        if (mode === 'reset' && outcome === 'expired') {
+          authMessage('Ссылка недействительна или уже использована. Вернитесь к запросу новой ссылки. Это пример.', 'error');
+          resetRecovery(); byId('auth-recover-email').focus(); return;
+        }
+        if (outcome === 'error') {
+          authMessage(mode === 'login' ? 'Не удалось войти. Проверьте почту и пароль или восстановите доступ. Это пример отказа.' : 'Не удалось завершить действие. Выберите успешный результат и повторите. Это пример отказа.', 'error');
+          return;
+        }
+        if (mode === 'recover') {
+          authMessage('Пример ответа: если для этого адреса доступно восстановление, придёт письмо со ссылкой. Проверьте входящие и спам. В витрине письмо не отправляется.');
+          byId('auth-open-letter').hidden = false;
+        } else if (mode === 'register') {
+          authMessage('Пример ответа: проверьте почту для продолжения регистрации. Если аккаунт уже есть, попробуйте войти или восстановить пароль. Письмо не отправлено.');
+          byId('auth-confirm-email').hidden = false;
+        } else {
+          const text = mode === 'login' ? 'Демонстрация: вход завершён. Реальная сессия не создана.' : 'Демонстрация: пароль изменён. Реальные данные не менялись; теперь можно вернуться ко входу.';
+          form.querySelectorAll('input[autocomplete$="password"]').forEach(input => { input.value = ''; });
+          authMessage(text, 'success');
+          notify(text);
+        }
+      });
+    });
+  });
+  auth.querySelectorAll('[data-password-toggle]').forEach(button => button.addEventListener('click', () => {
+    const input = byId(button.dataset.passwordToggle);
+    const visible = input.type === 'password';
+    input.type = visible ? 'text' : 'password';
+    button.textContent = visible ? 'Скрыть' : 'Показать';
+    button.setAttribute('aria-label', visible ? 'Скрыть пароль' : 'Показать пароль');
+    button.setAttribute('aria-pressed', String(visible));
+  }));
+  auth.querySelectorAll('[data-auth-provider]').forEach(button => button.addEventListener('click', () => {
+    if (authPending) return;
+    clearAuthFeedback();
+    authWait(button, null, outcome => {
+      if (outcome === 'cancel') authMessage('Пример: вход через ' + button.dataset.authProvider + ' отменён. Попробуйте снова или выберите другой способ.');
+      else if (outcome === 'error') authMessage('Пример: не удалось войти через ' + button.dataset.authProvider + '. Попробуйте снова или выберите другой способ.', 'error');
+      else {
+        const text = 'Демонстрация: вход через ' + button.dataset.authProvider + ' без обязательного email. Сервис не подключён, реальная сессия не создана.';
+        authMessage(text, 'success'); notify(text);
+      }
+    });
+  }));
+  auth.querySelectorAll('[role="tab"]').forEach(tab => {
+    tab.addEventListener('click', clearAuthFeedback);
+    tab.addEventListener('keydown', event => { if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) clearAuthFeedback(); });
+  });
+  auth.querySelectorAll('[data-auth-tab]').forEach(button => button.addEventListener('click', () => {
+    resetRecovery(); showAuthTab(button.dataset.authTab);
+  }));
+  scenario.addEventListener('change', clearAuthFeedback);
+  byId('auth-cancel').addEventListener('click', () => { const button = authPending?.button; cancelAuth(); button?.focus(); authMessage('Демонстрационное ожидание отменено. Можно повторить действие.'); });
+  byId('auth-open-letter').addEventListener('click', () => {
+    clearAuthFeedback();
+    if (scenario.value === 'expired') { byId('auth-recover-email').focus(); authMessage('Ссылка недействительна или уже использована. Запросите новую через «Отправить ссылку». Это пример.', 'error'); return; }
+    byId('auth-recovery-request').hidden = true;
+    byId('auth-recovery-reset').hidden = false;
+    byId('auth-reset-heading').focus();
+  });
+  byId('auth-confirm-email').addEventListener('click', () => {
+    clearAuthFeedback();
+    byId('auth-register-form').querySelector('[type="submit"]').focus();
+    if (scenario.value === 'expired') { authMessage('Ссылка подтверждения недействительна или уже использована. Повторите запрос регистрации. Это пример.', 'error'); return; }
+    byId('auth-register-password').value = '';
+    const text = 'Демонстрация: адрес подтверждён. Реальный аккаунт не создан.';
+    authMessage(text, 'success'); notify(text);
+  });
+  byId('auth-recovery-back').addEventListener('click', () => { resetRecovery(); showAuthTab('login'); });
+  byId('auth-clear').addEventListener('click', () => {
+    clearAuthFeedback(); resetRecovery();
+    authForms.forEach(form => {
+      form.reset(); form.querySelector('.error-summary').hidden = true;
+      form.querySelectorAll('input').forEach(input => { input.removeAttribute('aria-invalid'); byId(input.id + '-error').hidden = true; });
+    });
+    auth.querySelectorAll('[data-password-toggle]').forEach(button => {
+      byId(button.dataset.passwordToggle).type = 'password'; button.textContent = 'Показать'; button.setAttribute('aria-label', 'Показать пароль'); button.setAttribute('aria-pressed', 'false');
+    });
+    scenario.value = 'ok'; showAuthTab('login');
+  });
+  addEventListener('hashchange', clearAuthFeedback);
+  addEventListener('popstate', clearAuthFeedback);
+  accountLinks.forEach(link => link.addEventListener('click', clearAuthFeedback));
 })();

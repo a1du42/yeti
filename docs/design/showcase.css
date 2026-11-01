@@ -250,6 +250,36 @@ dialog::backdrop { background: var(--color-scrim); }
 :root[data-reduced="true"] .tab-panel[data-active="true"] { transition-delay: 0s; }
 :root[data-reduced="true"] .tabs button::after { transition-duration: var(--dur-reduced); }
 
+/* Authentication documentation sample; shared tokens and tab behavior. */
+.auth-layout { display: grid; grid-template-columns: minmax(0, 32rem) minmax(0, 1fr); align-items: start; gap: var(--space-10); }
+.auth-card { min-width: 0; background: var(--color-surface); border: var(--rule-default) solid var(--color-line); border-radius: var(--radius-panel); padding: var(--space-8); }
+.auth-logo { display: block; width: 180px; margin: 0 auto var(--space-8); }
+.auth-panels h3 { margin-bottom: var(--space-5); }
+.auth-providers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.auth-providers .btn { padding-inline: var(--space-2); overflow-wrap: anywhere; }
+.auth-divider { display: flex; align-items: center; gap: var(--space-3); margin-block: var(--space-6); text-align: center; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; border-top: var(--rule-default) solid var(--color-line); }
+.auth-password { display: flex; gap: var(--space-2); min-width: 0; align-items: start; }
+.auth-password input { flex: 1; width: 0 !important; }
+.auth-password .btn { flex-shrink: 0; font-size: var(--text-small); padding-inline: var(--space-2); }
+.auth-submit { width: 100%; }
+.auth-text-button { color: var(--color-link); border-color: transparent; background: transparent; margin-top: var(--space-2); text-decoration: underline; text-underline-offset: .2em; }
+.auth-intro, .auth-legal-note { margin-bottom: var(--space-5); }
+.auth-result { display: flex; align-items: flex-start; gap: var(--space-2); background: var(--color-muted); padding: var(--space-4); border-radius: var(--radius-control); margin-top: var(--space-5); overflow-wrap: anywhere; }
+.auth-result .icon { flex-shrink: 0; margin-top: var(--space-1); }
+.auth-result[data-kind="error"] { color: var(--color-danger); background: var(--color-danger-bg); }
+.auth-result[data-kind="success"] { color: var(--color-success); background: var(--color-success-bg); }
+.auth-notes { min-width: 0; }
+.auth-notes > .heading-help { margin-bottom: var(--space-5); }
+.auth-note { padding-block: var(--space-6); border-bottom: var(--rule-default) solid var(--color-line); }
+.auth-note h3 { font-size: var(--text-body); margin-bottom: var(--space-2); }
+.auth-notes > .btn { margin-top: var(--space-6); }
+.auth-card :is(input, .error-summary, h3) { scroll-margin-top: calc(var(--size-header) + var(--space-6)); }
+.auth-card .field-error { color: var(--color-danger); }
+#auth-open-letter, #auth-confirm-email { margin-top: var(--space-4); }
+@media (max-width: 1279px) { .auth-layout { grid-template-columns: minmax(0, 1fr); } .auth-card { width: 100%; max-width: 32rem; margin-inline: auto; } }
+@media (max-width: 767px) { .auth-card { padding: var(--space-4); } .auth-tabs button { flex-direction: column; gap: var(--space-1); } }
+
 #notification-symbol { display: flex; color: var(--color-success); }
 .table-example, .notification-example { margin-top: var(--space-6); }
 .notification-example .btn { margin-top: var(--space-4); }
