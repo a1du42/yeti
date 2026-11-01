@@ -21,13 +21,19 @@
     }).catch(() => {});
   }
 
-  const theme = byId('theme');
-  theme.value = root.dataset.theme || 'system';
-  theme.addEventListener('change', () => {
-    if (theme.value === 'system') delete root.dataset.theme;
-    else root.dataset.theme = theme.value;
-    try { localStorage.setItem('yeti-design-theme', theme.value); } catch (_) {}
-  });
+  const themeButtons = [...document.querySelectorAll('[data-theme-option]')];
+  function updateThemeButtons() {
+    const selected = root.dataset.theme || 'system';
+    themeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeOption === selected)));
+  }
+  themeButtons.forEach(button => button.addEventListener('click', () => {
+    const value = button.dataset.themeOption;
+    if (value === 'system') delete root.dataset.theme;
+    else root.dataset.theme = value;
+    try { localStorage.setItem('yeti-design-theme', value); } catch (_) {}
+    updateThemeButtons();
+  }));
+  updateThemeButtons();
 
   const navigation = byId('navigation');
   const menuToggle = document.querySelector('.menu-toggle');
@@ -58,6 +64,7 @@
   const wideScreen = matchMedia('(min-width: 1024px)');
   wideScreen.addEventListener('change', () => closeNavigation());
   const observer = new IntersectionObserver(entries => {
+    if (root.hasAttribute('data-account')) return;
     const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
     if (!visible.length) return;
     for (const link of navigation.querySelectorAll('a')) {
@@ -115,7 +122,8 @@
 
   const tabs = [...document.querySelectorAll('[role="tab"]')];
   function selectTab(selected, focus = false) {
-    tabs.forEach(tab => {
+    const groupTabs = [...selected.closest('[role="tablist"]').querySelectorAll('[role="tab"]')];
+    groupTabs.forEach(tab => {
       const active = tab === selected;
       tab.setAttribute('aria-selected', String(active));
       tab.tabIndex = active ? 0 : -1;
@@ -128,17 +136,169 @@
     if (focus) selected.focus();
     // CSS crossfade is interruptible; selection and accessibility update immediately.
   }
-  tabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => selectTab(tab));
+  tabs.forEach(tab => {
+    const groupTabs = [...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')];
+    const index = groupTabs.indexOf(tab);
+    tab.addEventListener('click', () => { selectTab(tab); syncAccountTab(tab); });
     tab.addEventListener('keydown', event => {
       let next;
-      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
-      if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+      if (event.key === 'ArrowRight') next = (index + 1) % groupTabs.length;
+      if (event.key === 'ArrowLeft') next = (index - 1 + groupTabs.length) % groupTabs.length;
       if (event.key === 'Home') next = 0;
-      if (event.key === 'End') next = tabs.length - 1;
+      if (event.key === 'End') next = groupTabs.length - 1;
       if (next === undefined) return;
-      event.preventDefault(); selectTab(tabs[next], true);
+      event.preventDefault(); selectTab(groupTabs[next], true); syncAccountTab(groupTabs[next]);
     });
+  });
+
+  // Fictional account demonstration. No authentication, payment or network requests.
+  const account = byId('account-control');
+  const accountTrigger = byId('account-trigger');
+  const accountMenu = byId('account-menu');
+  const accountSection = byId('account');
+  const accountLinks = [...accountMenu.querySelectorAll('a')];
+  const accountItems = [...accountMenu.querySelectorAll('a, button')];
+  function closeAccountMenu(focus = false) {
+    accountMenu.hidden = true;
+    accountTrigger.setAttribute('aria-expanded', 'false');
+    if (focus) accountTrigger.focus();
+  }
+  function openAccountMenu() {
+    closeNavigation();
+    accountMenu.hidden = false;
+    accountTrigger.setAttribute('aria-expanded', 'true');
+    reveal(accountMenu, '--dur-short', 'translateY(4px)');
+  }
+  accountTrigger.addEventListener('click', () => accountMenu.hidden ? openAccountMenu() : closeAccountMenu());
+  byId('account-sign-out').addEventListener('click', () => {
+    closeAccountMenu(true);
+    notify('Пример выхода из аккаунта. Реальной сессии нет; тестовые настройки сохранены до обновления страницы.');
+  });
+  accountTrigger.addEventListener('keydown', event => {
+    if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+    event.preventDefault(); openAccountMenu();
+    accountItems[event.key === 'ArrowDown' ? 0 : accountItems.length - 1].focus();
+  });
+  account.addEventListener('focusout', event => { if (!account.contains(event.relatedTarget)) closeAccountMenu(); });
+  accountMenu.addEventListener('keydown', event => {
+    const index = accountItems.indexOf(document.activeElement);
+    let next;
+    if (event.key === 'ArrowDown') next = (index + 1) % accountItems.length;
+    if (event.key === 'ArrowUp') next = (index - 1 + accountItems.length) % accountItems.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = accountItems.length - 1;
+    if (next !== undefined) { event.preventDefault(); accountItems[next].focus(); }
+  });
+  document.addEventListener('pointerdown', event => { if (!account.contains(event.target)) closeAccountMenu(); });
+  menuToggle.addEventListener('click', () => closeAccountMenu());
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !accountMenu.hidden) { closeAccountMenu(true); event.preventDefault(); }
+  });
+  function placeAccount() {
+    closeAccountMenu();
+    (wideScreen.matches ? document.querySelector('.account-slot') : document.querySelector('.topbar')).append(account);
+  }
+  wideScreen.addEventListener('change', placeAccount);
+  placeAccount();
+  function syncAccountTab(tab) {
+    if (!tab.closest('.account-tabs')) return;
+    history.replaceState(null, '', '#account-' + (tab.id === 'tab-payment' ? 'payment' : 'settings'));
+    markAccountLocation();
+  }
+  function markAccountLocation() {
+    accountLinks.forEach(link => {
+      if (link.hash === location.hash) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+  }
+  function showAccountLocation(focus = false) {
+    const wasActive = root.hasAttribute('data-account');
+    const active = ['#account-payment', '#account-settings'].includes(location.hash);
+    root.toggleAttribute('data-account', active);
+    accountSection.hidden = !active;
+    if (active) {
+      selectTab(byId(location.hash === '#account-settings' ? 'tab-settings' : 'tab-payment'));
+      document.title = 'Мой аккаунт · Дизайн-система · YETI STREAM';
+      navigation.querySelectorAll('[aria-current]').forEach(link => link.removeAttribute('aria-current'));
+      if (focus) byId('account-heading').focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    } else {
+      document.title = 'Дизайн-система · YETI STREAM';
+      if (wasActive) {
+        const section = byId(location.hash.slice(1));
+        const heading = section?.querySelector('h1, h2');
+        section?.scrollIntoView();
+        if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+      }
+    }
+    markAccountLocation();
+  }
+  byId('account-heading').tabIndex = -1;
+  accountLinks.forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    history.pushState(null, '', link.hash);
+    closeAccountMenu(); closeNotice(); showAccountLocation(true);
+  }));
+  addEventListener('hashchange', () => showAccountLocation());
+  addEventListener('popstate', () => showAccountLocation());
+  showAccountLocation();
+
+  const amount = byId('payment-amount');
+  const rubles = value => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(value);
+  function updatePayment(showError = false) {
+    const valid = amount.value !== '' && amount.validity.valid;
+    byId('payment-credit').textContent = valid ? rubles(amount.valueAsNumber) : '—';
+    byId('payment-total').textContent = valid ? rubles(amount.valueAsNumber) : '—';
+    byId('payment-result-text').textContent = '';
+    byId('payment-result').hidden = true;
+    if (showError || amount.hasAttribute('aria-invalid')) {
+      amount.setAttribute('aria-invalid', String(!valid));
+      byId('payment-error').hidden = valid;
+      byId('payment-error').textContent = valid ? '' : 'Введите целое число от 100 до 50 000 ₽.';
+    }
+    return valid;
+  }
+  amount.addEventListener('input', () => updatePayment());
+  amount.addEventListener('blur', () => updatePayment(true));
+  document.querySelectorAll('[data-amount]').forEach(button => button.addEventListener('click', () => {
+    amount.value = button.dataset.amount; updatePayment(true);
+  }));
+  byId('payment-form').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!updatePayment(true)) { amount.focus(); return; }
+    byId('payment-result').hidden = false;
+    byId('payment-result-text').textContent = 'Пример расчёта готов: ' + rubles(amount.valueAsNumber) + '. Деньги не списаны, тестовый баланс не изменился.';
+  });
+
+  const settingsForm = byId('account-settings-form');
+  const accountName = byId('account-name');
+  const settingsControls = [accountName, byId('account-timezone'), byId('account-order-notices'), byId('account-payment-notices')];
+  let savedSettings = settingsControls.map(control => control.type === 'checkbox' ? control.checked : control.value);
+  function validateAccountName() {
+    const valid = accountName.value.trim().length > 0 && accountName.value.length <= 60;
+    accountName.setAttribute('aria-invalid', String(!valid));
+    byId('account-name-error').hidden = valid;
+    return valid;
+  }
+  accountName.addEventListener('blur', validateAccountName);
+  accountName.addEventListener('input', () => { if (accountName.hasAttribute('aria-invalid')) validateAccountName(); });
+  settingsForm.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!validateAccountName()) { accountName.focus(); return; }
+    accountName.value = accountName.value.trim();
+    savedSettings = settingsControls.map(control => control.type === 'checkbox' ? control.checked : control.value);
+    document.querySelectorAll('[data-account-name]').forEach(label => { label.textContent = accountName.value; });
+    byId('account-trigger').setAttribute('aria-label', 'Аккаунт ' + accountName.value + ': открыть меню');
+    document.querySelector('.account-avatar').textContent = accountName.value.split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+    notify('Пример настроек сохранён до обновления страницы. Данные не отправлялись.');
+  });
+  byId('account-cancel').addEventListener('click', () => {
+    settingsControls.forEach((control, index) => {
+      if (control.type === 'checkbox') control.checked = savedSettings[index];
+      else control.value = savedSettings[index];
+    });
+    accountName.removeAttribute('aria-invalid'); byId('account-name-error').hidden = true;
+    notify('Изменения отменены. Восстановлены последние настройки примера.');
   });
 
   let openHelp = null;

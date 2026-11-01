@@ -54,15 +54,9 @@ code { font: var(--text-small)/var(--line-body) var(--font-code); overflow-wrap:
 .navigation a { min-height: var(--size-control); display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-control); color: var(--color-text-secondary); font-size: var(--text-small); text-decoration: none; }
 .navigation a:hover { background: var(--color-muted); color: var(--color-text); }
 .navigation a[aria-current] { color: var(--color-selected-text); background: var(--color-selected); font-weight: 500; }
-.sidebar-bottom { margin-top: auto; padding: var(--space-8) var(--space-3) 0; }
-.sidebar-bottom .small { color: var(--color-text-secondary); }
-.sidebar-bottom p { margin-top: var(--space-1); font-weight: 500; }
-.sidebar-bottom a { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; font-size: var(--text-small); }
 .page { margin-left: var(--showcase-aside); }
 .topbar { position: sticky; top: 0; z-index: var(--z-sticky); height: var(--size-header); background: var(--color-bg); border-bottom: var(--rule-default) solid var(--color-line); padding-inline: var(--space-8); display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
 .topbar-title { font-size: var(--text-small); color: var(--color-text-secondary); }
-.theme-control { display: flex; gap: var(--space-3); align-items: center; font-size: var(--text-small); }
-.theme-control select { min-width: 148px; }
 .menu-toggle { display: none !important; }
 main { max-width: var(--showcase-width); margin: auto; padding: 0 var(--space-8); }
 .section { padding-block: var(--space-12); border-bottom: var(--rule-default) solid var(--color-line); scroll-margin-top: var(--space-4); min-width: 0; }
@@ -217,7 +211,7 @@ dialog::backdrop { background: var(--color-scrim); }
 }
 @media (max-width: 1023px) {
   .sidebar { position: static; width: auto; padding: 0; border: 0; display: contents; }
-  .sidebar > .brand, .sidebar-caption, .sidebar-bottom { display: none; }
+  .sidebar > .brand, .sidebar-caption { display: none; }
   .navigation { display: none; position: fixed; top: var(--size-header); inset-inline: 0; max-height: calc(100dvh - var(--size-header)); overflow-y: auto; z-index: var(--z-menu); background: var(--color-surface); padding: var(--space-4); border-bottom: var(--rule-default) solid var(--color-control-border); }
   .navigation.is-open { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
   .page { margin-left: 0; }.menu-toggle { display: inline-flex !important; }.topbar-title { display: none; }
@@ -225,7 +219,6 @@ dialog::backdrop { background: var(--color-scrim); }
 }
 @media (max-width: 767px) {
   main { padding-inline: var(--space-4); }.topbar { padding-inline: var(--space-4); gap: var(--space-2); }
-  .theme-control { gap: var(--space-2); }.theme-control label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }.theme-control select { min-width: 140px; max-width: 180px; }
   .section { padding-block: var(--space-8); }.intro { grid-template-columns: minmax(0,1fr); gap: var(--space-6); }
   .lead { font-size: var(--text-lead); }.identity-sample { min-height: 240px; }
   .principles { flex-direction: column; gap: var(--space-4); }
@@ -268,3 +261,132 @@ dialog::backdrop { background: var(--color-scrim); }
 .table-actions > div { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .record-name { display: block; margin-bottom: var(--space-2); }
 .example-table .badge { margin-right: var(--space-2); }
+/* Account examples belong only to the documentation showcase. */
+.account-slot { margin-top: auto; padding-top: var(--space-6); }
+.account-control { position: relative; min-width: 0; }
+.account-trigger { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-2); width: 100%; border: 1px solid var(--color-line); border-radius: var(--radius-panel); background: var(--color-bg); text-align: left; min-height: var(--size-control); }
+.account-trigger:hover, .account-trigger[aria-expanded="true"] { background: var(--color-muted); }
+.account-avatar { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; border-radius: var(--radius-pill); background: var(--color-selected); color: var(--color-selected-text); font-weight: 500; font-size: var(--text-small); }
+.account-identity { min-width: 0; flex: 1; }
+.account-identity strong, .account-identity span { display: block; overflow-wrap: anywhere; }
+.account-identity strong { font-size: var(--text-small); font-weight: 500; }
+.account-identity span { color: var(--color-text-secondary); font-size: var(--text-caption); }
+.account-trigger > .icon { width: 16px; height: 16px; }
+.account-menu { position: absolute; inset: auto 0 calc(100% + 8px); padding: var(--space-2); background: var(--color-raised); border: 1px solid var(--color-control-border); border-radius: var(--radius-panel); box-shadow: var(--shadow-overlay); z-index: var(--z-menu); max-height: min(480px, calc(100dvh - 100px)); overflow-y: auto; }
+.account-menu-heading { padding: var(--space-3); border-bottom: 1px solid var(--color-line); margin-bottom: var(--space-2); overflow-wrap: anywhere; }
+.account-menu-heading > * { display: block; font-size: var(--text-small); }
+.account-menu-heading > span { color: var(--color-text-secondary); }
+.account-menu :is(a, button) { border: 0; width: 100%; background: transparent; font: inherit; text-align: left; min-height: var(--size-control); display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3); color: var(--color-text); border-radius: var(--radius-control); text-decoration: none; }
+.account-menu :is(a, button):hover { background: var(--color-muted); }
+.account-menu a[aria-current] { color: var(--color-selected-text); background: var(--color-selected); }
+:root[data-account] main > :not(#account) { display: none; }
+.account-workspace { border: 0; }
+.account-back { margin-bottom: var(--space-6); font-size: var(--text-small); min-height: var(--size-control); }
+.account-back .icon { rotate: 180deg; }
+.account-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.account-heading h1 { font-size: var(--text-title); }
+.account-heading .eyebrow { margin-bottom: var(--space-2); }
+.account-description { margin-top: var(--space-4); max-width: 48rem; }
+.account-tabs { margin-top: var(--space-8); margin-bottom: var(--space-6); }
+.account-panels > .tab-panel { padding: 0; min-width: 0; }
+.payment-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--space-6); }
+.payment-overview { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+.balance-card { background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success); border-radius: var(--radius-panel); padding: var(--space-6); }
+.balance-value { font-size: clamp(2rem, 4vw, 3rem); line-height: var(--line-heading); font-weight: 600; margin-top: var(--space-8); font-variant-numeric: tabular-nums; }
+.balance-value span { font-size: var(--text-title-mobile); font-weight: 400; }
+.balance-card > .small { margin-top: var(--space-2); margin-bottom: var(--space-8); }
+.balance-detail { display: flex; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); font-size: var(--text-small); }
+.balance-detail strong { font-weight: 500; white-space: nowrap; }
+.payment-assurance { display: flex; gap: var(--space-4); padding: var(--space-5); border-left: 3px solid var(--color-success); background: var(--color-success-bg); border-radius: 0 var(--radius-control) var(--radius-control) 0; }
+.payment-assurance > .icon { width: 32px; height: 32px; color: var(--color-success); }
+.payment-assurance h2 { font-size: var(--text-body); color: var(--color-success); margin-bottom: var(--space-2); }
+.payment-assurance p { font-size: var(--text-small); }
+.payment-assurance p + p { margin-top: var(--space-3); }
+.payment-form { display: flex; flex-direction: column; gap: var(--space-4); margin: 0; }
+.payment-form h2, .payment-history h2, .settings-form h2 { font-size: var(--text-section); }
+.payment-form .field { margin: 0; }
+.amount-presets { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--space-2); }
+.amount-presets .btn { padding-inline: var(--space-1); }
+.payment-summary { margin: 0; padding: var(--space-4); background: var(--color-bg); border-radius: var(--radius-control); font-size: var(--text-small); }
+.payment-summary > div { display: flex; justify-content: space-between; gap: var(--space-3); padding-block: var(--space-2); }
+.payment-summary dd { margin: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.payment-summary .payment-total { margin-top: var(--space-2); padding-top: var(--space-4); border-top: 1px solid var(--color-line); font-weight: 600; font-size: var(--text-body); }
+#payment-result { display: flex; gap: var(--space-2); align-items: flex-start; }
+#payment-result { color: var(--color-success); }
+.payment-history { margin-top: var(--space-6); }
+.operation-list { list-style: none; padding: 0; margin: var(--space-5) 0 var(--space-4); }
+.operation-list li { display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: var(--space-3); align-items: center; padding-block: var(--space-4); border-top: 1px solid var(--color-line); }
+.operation-icon { width: 44px; height: 44px; border-radius: var(--radius-control); background: var(--color-muted); display: grid; place-items: center; }
+.operation-icon.success { color: var(--color-success); background: var(--color-success-bg); }
+.operation-list strong { font-size: var(--text-small); font-weight: 500; }
+.operation-list li > div > span { display: block; overflow-wrap: anywhere; }
+.operation-outcome { text-align: right; }
+.operation-status { display: flex !important; align-items: center; justify-content: flex-end; gap: var(--space-1); font-size: var(--text-small); }
+.operation-status .icon { width: 16px; height: 16px; }
+.success-text { color: var(--color-success); }
+.settings-form { display: grid; gap: var(--space-6); }
+.settings-form .sample-panel { margin: 0; }
+.settings-section-heading { display: flex; gap: var(--space-3); align-items: flex-start; margin-bottom: var(--space-6); }
+.settings-section-heading > .icon { margin-top: var(--space-1); color: var(--color-link); }
+.settings-section-heading p { margin-top: var(--space-2); }
+.settings-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-6); }
+.settings-fields .field { margin: 0; }
+.account-notifications { padding: 0; margin: var(--space-6) 0 0; border: 0; }
+.account-notifications legend { font-weight: 500; margin-bottom: var(--space-2); }
+.account-notifications label { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; cursor: pointer; }
+.account-notifications input { width: 20px; height: 20px; accent-color: var(--color-action); flex-shrink: 0; }
+.account-notifications p { margin-top: var(--space-2); }
+.settings-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+.settings-actions > span { flex-basis: 100%; }
+@media (max-width: 1023px) {
+  .account-slot { display: none; }
+  .topbar > .account-control { margin-left: var(--space-2); }
+  .topbar .account-trigger { width: auto; padding: var(--space-1); gap: var(--space-1); min-width: 44px; background: var(--color-surface); }
+  .topbar .account-identity { display: none; }
+  .account-menu { position: fixed; top: calc(var(--size-header) + 8px); right: max(var(--space-4), env(safe-area-inset-right)); left: auto; bottom: auto; width: min(320px, calc(100% - 32px)); }
+}
+@media (max-width: 767px) {
+  .account-heading h1 { font-size: var(--text-title-mobile); }
+  .account-heading { gap: var(--space-3); }
+  .account-tabs { margin-top: var(--space-6); }
+  .payment-layout, .settings-fields { grid-template-columns: minmax(0,1fr); gap: var(--space-4); }
+  .payment-overview { gap: var(--space-4); }
+  .balance-card { padding: var(--space-5); }
+  .balance-value { margin-top: var(--space-5); }
+  .balance-card > .small { margin-bottom: var(--space-5); }
+  .payment-assurance { padding: var(--space-4); gap: var(--space-3); }
+  .payment-history .sample-heading { align-items: flex-start; flex-direction: column; gap: var(--space-2); }
+  .operation-list li { grid-template-columns: minmax(0,1fr) auto; gap: var(--space-2); }
+  .operation-icon { display: none; }
+  .operation-outcome { max-width: 112px; }
+  .operation-status { font-size: var(--text-caption); }
+  .topbar > .account-control { margin-left: 0; }
+  .account-menu { padding-bottom: max(var(--space-2), env(safe-area-inset-bottom)); }
+}
+
+.account-panels .balance-card p { color: inherit; }
+.account-panels .field-error { color: var(--color-danger); font-size: var(--text-small); }
+.account-panels #payment-result { color: var(--color-success); }
+
+@media (max-width: 767px) {
+  .topbar .account-trigger > .icon { display: none; }
+  .topbar > .account-control { flex: 0 0 auto; }
+  .topbar .menu-toggle { padding-inline: var(--space-3); }
+}
+
+.account-back { margin-top: 0; }
+@media (max-width: 767px) {
+  .account-workspace { padding-block: var(--space-6); }
+  .account-back { margin-bottom: var(--space-4); }
+}
+
+
+.account-menu hr { border: 0; border-top: 1px solid var(--color-line); margin: var(--space-2) 0; }
+.account-menu .account-sign-out { color: var(--color-danger); }
+.account-menu .account-sign-out:hover { background: var(--color-danger-bg); }
+
+
+.account-theme-switch { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--space-1); padding: var(--space-1); margin: var(--space-3) var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-bg); }
+.account-menu .account-theme-switch button { display: grid; place-items: center; min-width: var(--size-control); min-height: var(--size-control); padding: var(--space-2); border: 1px solid transparent; }
+.account-menu .account-theme-switch button[aria-pressed="true"] { color: var(--color-selected-text); background: var(--color-selected); border-color: var(--color-selected-text); }
+.theme-tooltip { width: max-content; max-width: calc(100vw - 32px); padding: var(--space-2) var(--space-3); }
