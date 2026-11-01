@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-01",
+  "scope": "design-documentation-only",
+  "initial_files": ["logo.svg"],
+  "initial_framework": null,
+  "initial_font_stack": null,
+  "initial_spacing_scale": null,
+  "initial_motion_dependency": null,
+  "initial_brand_colors": ["#17232F", "#2878C8", "#DCE6ED"],
+  "preserved": ["logo.svg", "user-specified brand colors", "four root route boundaries"],
+  "system_document": "DESIGN.md",
+  "canonical_tokens": "tokens.css",
+  "application_implemented": false,
+  "rescan_when": "Implementation begins or package.json / framework configuration is added."
+}

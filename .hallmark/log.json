@@ -1,0 +1,21 @@
+[
+  {
+    "date": "2026-11-01",
+    "scope": "design-documentation-only",
+    "macrostructure": "Product workspace specification",
+    "theme": "custom",
+    "theme_axes": "dark and light / sans-serif / cool blue",
+    "vibe": "calm technical graphite and ice",
+    "enrichment": "static design specification sheet",
+    "brief": "YETI STREAM: shared system for app, management and referral workspaces",
+    "nav": "side navigation on desktop, menu panel on narrow screens",
+    "footer": "not applicable",
+    "system_document": "DESIGN.md",
+    "system_locked": true,
+    "wordmark_font": "Nunito Sans",
+    "wordmark_weight": 800,
+    "wordmark_source": "Explicit user instruction, 2026-11-01; interface typography unchanged",
+    "rendered_application": false,
+    "critique": {"philosophy": 4, "hierarchy": 4, "execution": 4, "specificity": 5, "restraint": 5, "variety": 4}
+  }
+]

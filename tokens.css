@@ -1,0 +1,222 @@
+/* Hallmark · macrostructure: product workspace specification · tone: calm technical · anchor hue: blue
+ * Pre-emit critique: P4 H4 E4 S5 R5 V4. Documentation tokens only; no application styles.
+ * Canonical HEX values are recorded beside equivalent OKLCH primitives.
+ */
+:root {
+  --color-palette-graphite: oklch(25.08276728% 0.028431467 249.0199311); /* #17232F */
+  --color-palette-blue: oklch(56.57413267% 0.145127457 252.0918980); /* #2878C8 */
+  --color-palette-ice: oklch(91.94241628% 0.014372778 238.0204774); /* #DCE6ED */
+  --color-palette-white: oklch(99.99999935% 0.000000037 89.8755631); /* #FFFFFF */
+  --color-palette-light-bg: oklch(96.72249428% 0.006687109 233.6404723); /* #F0F5F8 */
+  --color-palette-light-surface: oklch(98.33996970% 0.004165153 236.4956103); /* #F7FAFC */
+  --color-palette-light-muted: oklch(94.82773106% 0.010086236 238.5133046); /* #E8EFF4 */
+  --color-palette-light-secondary: oklch(52.63045822% 0.034503829 246.9722690); /* #5B6D7E */
+  --color-palette-light-control: oklch(59.25883475% 0.035754624 242.7320206); /* #6C8192 */
+  --color-palette-blue-hover: oklch(49.81413864% 0.130336105 252.4868547); /* #1F64AA */
+  --color-palette-blue-pressed: oklch(43.80019543% 0.115216943 252.5714472); /* #18538F */
+  --color-palette-light-selected: oklch(95.65689415% 0.017185179 248.0074255); /* #E8F2FC */
+  --color-palette-dark-bg: oklch(20.91135445% 0.022351727 248.9401928); /* #101922 */
+  --color-palette-dark-raised: oklch(29.03455508% 0.032731666 247.2896155); /* #1E2D3B */
+  --color-palette-dark-muted: oklch(33.24278535% 0.036825025 246.0209497); /* #263848 */
+  --color-palette-dark-secondary: oklch(78.34363535% 0.027411679 242.8420125); /* #AABBC9 */
+  --color-palette-dark-line: oklch(39.95549272% 0.043626339 246.5681864); /* #344A5E */
+  --color-palette-dark-control: oklch(64.36232578% 0.042121905 241.4158744); /* #7791A5 */
+  --color-palette-dark-link: oklch(76.42204792% 0.125747349 249.4643916); /* #70B8FF */
+  --color-palette-dark-focus: oklch(81.23783570% 0.099717030 246.9980980); /* #8CC8FF */
+  --color-palette-dark-selected: oklch(33.11471365% 0.070934944 247.5225518); /* #123858 */
+  --color-palette-light-success: oklch(51.13505480% 0.110156155 158.4440669); /* #18794E */
+  --color-palette-light-success-bg: oklch(95.55051202% 0.016565292 162.7476278); /* #E7F4ED */
+  --color-palette-light-warning: oklch(50.59593491% 0.101191051 72.1262293); /* #885A12 */
+  --color-palette-light-warning-bg: oklch(96.99788404% 0.031195319 84.5922356); /* #FFF4DE */
+  --color-palette-light-danger: oklch(52.69149567% 0.160558387 20.1931811); /* #B53842 */
+  --color-palette-light-danger-bg: oklch(95.65790733% 0.017758844 4.5202800); /* #FCECEF */
+  --color-palette-dark-success: oklch(84.40215483% 0.103341954 160.2400461); /* #8DE1B5 */
+  --color-palette-dark-success-bg: oklch(31.56525467% 0.043967116 171.7327233); /* #17392F */
+  --color-palette-dark-warning: oklch(86.28375877% 0.095951692 81.4363175); /* #F2CC88 */
+  --color-palette-dark-warning-bg: oklch(35.95303086% 0.043600727 76.7965258); /* #4A3A22 */
+  --color-palette-dark-danger: oklch(83.45912197% 0.092946989 12.5950303); /* #FFB0B8 */
+  --color-palette-dark-danger-bg: oklch(35.06770446% 0.065673904 6.5517411); /* #572B35 */
+
+  --color-brand-primary: var(--color-palette-graphite);
+  --color-brand-accent: var(--color-palette-blue);
+  --color-brand-detail: var(--color-palette-ice);
+  --font-wordmark: "Nunito Sans", "Segoe UI", sans-serif;
+  --font-weight-wordmark: 800;
+  --font-display: "Manrope", "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --font-code: ui-monospace, "Cascadia Code", monospace;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --text-caption: 0.75rem;
+  --text-small: 0.875rem;
+  --text-body: 1rem;
+  --text-lead: 1.125rem;
+  --text-section: 1.25rem;
+  --text-title-mobile: 1.5rem;
+  --text-title: 2rem;
+  --line-body: 1.5;
+  --line-label: 1.4285714;
+  --line-heading: 1.25;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --radius-control: 0.5rem;
+  --radius-panel: 0.75rem;
+  --radius-dialog: 1rem;
+  --radius-pill: 999px;
+  --rule-default: 1px;
+  --rule-focus: 2px;
+  --focus-offset: 2px;
+  --size-control: 2.75rem;
+  --size-control-large: 3rem;
+  --size-icon-small: 1rem;
+  --size-icon: 1.25rem;
+  --size-icon-large: 1.5rem;
+  --size-help-glyph: 1.125rem;
+  --size-sidebar: 15rem;
+  --size-header: 4rem;
+  --size-content: 80rem;
+  --size-content-wide: 90rem;
+  --size-form: 40rem;
+  --size-dialog: 32rem;
+  --size-sheet: 28rem;
+  --size-tooltip: 20rem;
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-menu: 20;
+  --z-backdrop: 30;
+  --z-dialog: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
+  --dur-press: 80ms;
+  --dur-fast: 120ms;
+  --dur-short: 160ms;
+  --dur-base: 220ms;
+  --dur-panel: 280ms;
+  --dur-sheet: 320ms;
+  --dur-max: 400ms;
+  --dur-reduced: 100ms;
+  --delay-help-hover: 240ms;
+  --delay-help-focus: 0ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --color-scrim: color-mix(in srgb, var(--color-palette-dark-bg) 64%, transparent);
+  --shadow-overlay: 0 12px 32px color-mix(in srgb, var(--color-brand-primary) 16%, transparent);
+}
+
+:root,
+[data-theme="light"] {
+  --color-bg: var(--color-palette-light-bg);
+  --color-surface: var(--color-palette-light-surface);
+  --color-raised: var(--color-palette-light-surface);
+  --color-muted: var(--color-palette-light-muted);
+  --color-text: var(--color-palette-graphite);
+  --color-text-secondary: var(--color-palette-light-secondary);
+  --color-line: var(--color-palette-ice);
+  --color-control-border: var(--color-palette-light-control);
+  --color-action: var(--color-palette-blue);
+  --color-action-text: var(--color-palette-white);
+  --color-action-hover: var(--color-palette-blue-hover);
+  --color-action-pressed: var(--color-palette-blue-pressed);
+  --color-action-border: var(--color-palette-blue);
+  --color-link: var(--color-palette-blue-hover);
+  --color-focus: var(--color-palette-blue-hover);
+  --color-selected: var(--color-palette-light-selected);
+  --color-selected-text: var(--color-palette-blue-pressed);
+  --color-success: var(--color-palette-light-success);
+  --color-success-bg: var(--color-palette-light-success-bg);
+  --color-warning: var(--color-palette-light-warning);
+  --color-warning-bg: var(--color-palette-light-warning-bg);
+  --color-danger: var(--color-palette-light-danger);
+  --color-danger-bg: var(--color-palette-light-danger-bg);
+  --color-help-bg: var(--color-palette-graphite);
+  --color-help-text: var(--color-palette-light-surface);
+  --color-help-border: var(--color-palette-dark-control);
+}
+
+[data-theme="dark"] {
+  --color-bg: var(--color-palette-dark-bg);
+  --color-surface: var(--color-palette-graphite);
+  --color-raised: var(--color-palette-dark-raised);
+  --color-muted: var(--color-palette-dark-muted);
+  --color-text: var(--color-palette-light-surface);
+  --color-text-secondary: var(--color-palette-dark-secondary);
+  --color-line: var(--color-palette-dark-line);
+  --color-control-border: var(--color-palette-dark-control);
+  --color-action: var(--color-palette-blue);
+  --color-action-text: var(--color-palette-white);
+  --color-action-hover: var(--color-palette-blue-hover);
+  --color-action-pressed: var(--color-palette-blue-pressed);
+  --color-action-border: var(--color-palette-dark-link);
+  --color-link: var(--color-palette-dark-link);
+  --color-focus: var(--color-palette-dark-focus);
+  --color-selected: var(--color-palette-dark-selected);
+  --color-selected-text: var(--color-palette-dark-focus);
+  --color-success: var(--color-palette-dark-success);
+  --color-success-bg: var(--color-palette-dark-success-bg);
+  --color-warning: var(--color-palette-dark-warning);
+  --color-warning-bg: var(--color-palette-dark-warning-bg);
+  --color-danger: var(--color-palette-dark-danger);
+  --color-danger-bg: var(--color-palette-dark-danger-bg);
+  --color-help-bg: var(--color-palette-dark-raised);
+  --color-help-text: var(--color-palette-light-surface);
+  --color-help-border: var(--color-palette-dark-control);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --color-bg: var(--color-palette-dark-bg);
+    --color-surface: var(--color-palette-graphite);
+    --color-raised: var(--color-palette-dark-raised);
+    --color-muted: var(--color-palette-dark-muted);
+    --color-text: var(--color-palette-light-surface);
+    --color-text-secondary: var(--color-palette-dark-secondary);
+    --color-line: var(--color-palette-dark-line);
+    --color-control-border: var(--color-palette-dark-control);
+    --color-action: var(--color-palette-blue);
+    --color-action-text: var(--color-palette-white);
+    --color-action-hover: var(--color-palette-blue-hover);
+    --color-action-pressed: var(--color-palette-blue-pressed);
+    --color-action-border: var(--color-palette-dark-link);
+    --color-link: var(--color-palette-dark-link);
+    --color-focus: var(--color-palette-dark-focus);
+    --color-selected: var(--color-palette-dark-selected);
+    --color-selected-text: var(--color-palette-dark-focus);
+    --color-success: var(--color-palette-dark-success);
+    --color-success-bg: var(--color-palette-dark-success-bg);
+    --color-warning: var(--color-palette-dark-warning);
+    --color-warning-bg: var(--color-palette-dark-warning-bg);
+    --color-danger: var(--color-palette-dark-danger);
+    --color-danger-bg: var(--color-palette-dark-danger-bg);
+    --color-help-bg: var(--color-palette-dark-raised);
+    --color-help-text: var(--color-palette-light-surface);
+    --color-help-border: var(--color-palette-dark-control);
+  }
+}
+
+/* Components must also remove spatial transforms under reduced motion.
+ * Token overrides alone do not make an animation accessible.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-press: 0ms;
+    --dur-fast: 100ms;
+    --dur-short: 100ms;
+    --dur-base: 100ms;
+    --dur-panel: 100ms;
+    --dur-sheet: 100ms;
+    --dur-max: 100ms;
+    --delay-help-hover: 0ms;
+  }
+}
+
