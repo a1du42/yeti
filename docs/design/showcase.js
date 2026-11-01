@@ -551,7 +551,7 @@
   function cancelAuth() {
     clearTimeout(authTimer);
     if (authPending) {
-      authPending.button.textContent = authPending.label;
+      authPending.labelElement.textContent = authPending.label;
       authPending.button.disabled = false;
       authPending.form?.removeAttribute('aria-busy');
     }
@@ -566,10 +566,12 @@
     byId('auth-confirm-email').hidden = true;
   }
   function authWait(button, form, finish) {
+    closeHelp();
     cancelAuth();
     const outcome = scenario.value;
-    authPending = { button, label: button.textContent, form };
-    button.textContent = 'Проверяем…';
+    const labelElement = button.querySelector('.auth-provider-label') || button;
+    authPending = { button, labelElement, label: labelElement.textContent, form };
+    labelElement.textContent = 'Проверяем…';
     button.disabled = true;
     form?.setAttribute('aria-busy', 'true');
     auth.querySelectorAll('[data-auth-provider]').forEach(item => { item.disabled = true; });
@@ -586,7 +588,8 @@
   }
   function validateAuthField(input) {
     let error = '';
-    if (!input.value) error = input.type === 'email' ? 'Укажите электронную почту.' : 'Введите пароль.';
+    if (!input.value) error = input.tagName === 'SELECT' ? 'Выберите часовой пояс.' : input.type === 'email' ? 'Укажите электронную почту.' : 'Введите пароль.';
+    else if (input.id === 'auth-register-confirm' && input.value !== byId('auth-register-password').value) error = 'Пароли не совпадают. Повторите пароль ещё раз.';
     else if (input.type === 'email' && input.validity.typeMismatch) error = 'Укажите адрес в формате name@example.com.';
     else if (input.autocomplete === 'new-password' && [...input.value].length < 15) error = 'В примере нужно не менее 15 символов. Можно использовать фразу с пробелами.';
     const message = byId(input.id + '-error');
@@ -596,7 +599,7 @@
     return error;
   }
   function updateAuthSummary(form, focus = false) {
-    const invalid = [...form.querySelectorAll('input[aria-invalid="true"]')];
+    const invalid = [...form.querySelectorAll('input[aria-invalid="true"], select[aria-invalid="true"]')];
     const summary = form.querySelector('.error-summary');
     const signature = JSON.stringify(invalid.map(input => [input.id, byId(input.id + '-error').textContent]));
     const changed = summary.dataset.signature !== signature;
@@ -629,18 +632,20 @@
     byId('auth-recovery-reset').hidden = true;
   }
   authForms.forEach(form => {
-    form.querySelectorAll('input').forEach(input => {
+    form.querySelectorAll('input, select').forEach(input => {
       input.addEventListener('blur', () => { validateAuthField(input); updateAuthSummary(form); });
       input.addEventListener('input', () => {
         clearAuthFeedback();
-        if (input.hasAttribute('aria-invalid')) { validateAuthField(input); updateAuthSummary(form); }
+        if (input.id === 'auth-register-password' && byId('auth-register-confirm').hasAttribute('aria-invalid')) validateAuthField(byId('auth-register-confirm'));
+        if (input.hasAttribute('aria-invalid')) validateAuthField(input);
+        updateAuthSummary(form);
       });
     });
     form.addEventListener('submit', event => {
       event.preventDefault();
       if (authPending) return;
       clearAuthFeedback();
-      form.querySelectorAll('input').forEach(validateAuthField);
+      form.querySelectorAll('input, select[required]').forEach(validateAuthField);
       if (!updateAuthSummary(form, true)) return;
       const mode = form.dataset.authForm;
       authWait(form.querySelector('[type="submit"]'), form, outcome => {
@@ -671,8 +676,8 @@
     const input = byId(button.dataset.passwordToggle);
     const visible = input.type === 'password';
     input.type = visible ? 'text' : 'password';
-    button.textContent = visible ? 'Скрыть' : 'Показать';
-    button.setAttribute('aria-label', visible ? 'Скрыть пароль' : 'Показать пароль');
+    button.querySelector('use').setAttribute('href', visible ? '#icon-eye-slash' : '#icon-eye');
+    button.setAttribute('aria-label', (visible ? 'Скрыть ' : 'Показать ') + (input.id === 'auth-register-confirm' ? 'повтор пароля' : 'пароль'));
     button.setAttribute('aria-pressed', String(visible));
   }));
   auth.querySelectorAll('[data-auth-provider]').forEach(button => button.addEventListener('click', () => {
@@ -707,7 +712,7 @@
     clearAuthFeedback();
     byId('auth-register-form').querySelector('[type="submit"]').focus();
     if (scenario.value === 'expired') { authMessage('Ссылка подтверждения недействительна или уже использована. Повторите запрос регистрации. Это пример.', 'error'); return; }
-    byId('auth-register-password').value = '';
+    byId('auth-register-password').value = ''; byId('auth-register-confirm').value = '';
     const text = 'Демонстрация: адрес подтверждён. Реальный аккаунт не создан.';
     authMessage(text, 'success'); notify(text);
   });
@@ -716,13 +721,30 @@
     clearAuthFeedback(); resetRecovery();
     authForms.forEach(form => {
       form.reset(); form.querySelector('.error-summary').hidden = true;
-      form.querySelectorAll('input').forEach(input => { input.removeAttribute('aria-invalid'); byId(input.id + '-error').hidden = true; });
+      form.querySelectorAll('input, select').forEach(input => { input.removeAttribute('aria-invalid'); byId(input.id + '-error').hidden = true; });
     });
     auth.querySelectorAll('[data-password-toggle]').forEach(button => {
-      byId(button.dataset.passwordToggle).type = 'password'; button.textContent = 'Показать'; button.setAttribute('aria-label', 'Показать пароль'); button.setAttribute('aria-pressed', 'false');
+      byId(button.dataset.passwordToggle).type = 'password'; button.querySelector('use').setAttribute('href', '#icon-eye'); button.setAttribute('aria-label', button.dataset.passwordToggle === 'auth-register-confirm' ? 'Показать повтор пароля' : 'Показать пароль'); button.setAttribute('aria-pressed', 'false');
     });
+    byId('auth-timezone-unavailable').checked = false; updateAuthTimezone();
     scenario.value = 'ok'; showAuthTab('login');
   });
+  const timezoneSelect = byId('auth-register-timezone');
+  let detectedTimezone = '';
+  try { detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) {}
+  let timezones = ['UTC', 'Europe/Moscow', 'Europe/Minsk', 'Asia/Almaty', 'Asia/Tashkent', 'America/New_York', 'America/Chicago', 'America/Los_Angeles'];
+  try { if (Intl.supportedValuesOf) timezones = ['UTC', ...Intl.supportedValuesOf('timeZone')]; } catch (_) {}
+  if (detectedTimezone && !timezones.includes(detectedTimezone)) timezones.push(detectedTimezone);
+  for (const zone of [...new Set(timezones)]) { const option = document.createElement('option'); option.value = zone; option.textContent = zone; timezoneSelect.append(option); }
+  function updateAuthTimezone() {
+    const manual = !detectedTimezone || byId('auth-timezone-unavailable').checked;
+    byId('auth-timezone-field').hidden = !manual; timezoneSelect.required = manual;
+    timezoneSelect.value = manual ? '' : detectedTimezone;
+    timezoneSelect.removeAttribute('aria-invalid'); byId('auth-register-timezone-error').hidden = true;
+    byId('auth-timezone-detected').textContent = manual ? 'Не удалось определить часовой пояс. Выберите его из списка.' : 'Часовой пояс: ' + detectedTimezone + ' · определён браузером';
+  }
+  byId('auth-timezone-unavailable').addEventListener('change', () => { clearAuthFeedback(); updateAuthTimezone(); updateAuthSummary(byId('auth-register-form')); });
+  updateAuthTimezone();
   addEventListener('hashchange', clearAuthFeedback);
   addEventListener('popstate', clearAuthFeedback);
   accountLinks.forEach(link => link.addEventListener('click', clearAuthFeedback));

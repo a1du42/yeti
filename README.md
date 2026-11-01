@@ -20,7 +20,7 @@
 | [Основы](docs/design/foundations.md) | Палитра, типографика, логотип, сетка, темы |
 | [Компоненты](docs/design/components.md) | Размеры, состояния, поведение и доступность |
 | [Экраны](docs/design/screens.md) | Состав и компоновка будущих экранов |
-| [Вход и регистрация](docs/design/auth.md) | Google / YouTube, Яндекс, Telegram, Kick, email; восстановление и рекомендации |
+| [Вход и регистрация](docs/design/auth.md) | Google, Яндекс, Telegram, Kick, email; восстановление и рекомендации |
 | [Анимации](docs/design/motion.md) | Матрица переходов до 800 мс |
 | [Тексты и справка](docs/design/content.md) | Тултипы с `?`, терминология и готовые примеры |
 | [Инженерные правила](docs/engineering.md) | Асинхронность, скорость, данные и доступ |

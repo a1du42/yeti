@@ -25,7 +25,7 @@ YETI STREAM является будущим сервисом управлени�
 - `/admin`: операционный обзор; `/admin/orders`, `/admin/services`, `/admin/accounts`, `/admin/partners`, `/admin/audit`.
 - `/partners`: обзор; `/partners/links`, `/partners/referrals`, `/partners/accruals`, `/partners/payouts`, `/partners/settings`.
 
-Это имена кандидатов, не созданные маршруты. Формы доступа описаны в [инструкции](design/auth.md): Google / YouTube, Яндекс ID, Telegram, Kick, email и пароль. Внешний вход не требует дополнительного email. Адреса экранов и callbacks ещё не выбраны; не переиспользовать для них пустой `/` автоматически.
+Это имена кандидатов, не созданные маршруты. Формы доступа описаны в [инструкции](design/auth.md): Google, Яндекс ID, Telegram, Kick, email и пароль. Внешний вход не требует дополнительного email. Адреса экранов и callbacks ещё не выбраны; не переиспользовать для них пустой `/` автоматически.
 
 ## Основные сценарии
 
