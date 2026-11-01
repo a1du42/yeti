@@ -9,7 +9,8 @@
   --showcase-press-scale: .98;
 }
 * { box-sizing: border-box; }
-html { scroll-padding-top: 6rem; }
+/* Keep the viewport layout width unchanged while a modal locks scrolling. */
+html { scroll-padding-top: 6rem; scrollbar-gutter: stable; }
 body { margin: 0; font: var(--font-weight-regular) var(--text-body)/var(--line-body) var(--font-body); background: var(--color-bg); color: var(--color-text); font-synthesis: none; }
 body:has(dialog[open]) { overflow: hidden; }
 [hidden] { display: none !important; }
