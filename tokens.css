@@ -42,9 +42,9 @@
   --color-brand-detail: var(--color-palette-ice);
   --font-wordmark: "Rubik", "Segoe UI", sans-serif;
   --font-weight-wordmark: 700;
-  --font-display: "Manrope", "Segoe UI", sans-serif;
-  --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-code: ui-monospace, "Cascadia Code", monospace;
+  --font-display: "Rubik", "Segoe UI", sans-serif;
+  --font-body: "Rubik", "Segoe UI", sans-serif;
+  --font-code: "Rubik", "Segoe UI", sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;

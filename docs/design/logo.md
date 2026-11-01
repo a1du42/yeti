@@ -18,7 +18,7 @@
 | Полный логотип, тёмная поверхность | [logo-dark.svg](../../logo-dark.svg) |
 | Только знак, светлая поверхность | [logo-mark.svg](../../logo-mark.svg) |
 | Только знак, тёмная поверхность | [logo-mark-dark.svg](../../logo-mark-dark.svg) |
-| Редактируемый текстовый образец | [Rubik Bold 700 WOFF2](assets/fonts/rubik-700.woff2), [OFL](assets/RUBIK-OFL.txt) |
+| Редактируемый текстовый образец | [Rubik variable WOFF2, использовать вес 700](assets/fonts/rubik-400-700.woff2), [OFL](assets/RUBIK-OFL.txt) |
 
 Светлая версия: силуэт, лицо в деталях и YETI `#17232F`, белая область лица `#FFFFFF`, ледяная деталь `#DCE6ED`, поток и STREAM `#2878C8`. Тёмная версия: силуэт, детали лица и YETI `#F7FAFC`, область лица и просвет над потоком `#17232F`, ледяная деталь `#AABBC9`, поток и STREAM `#2878C8`. Тёмная версия предназначена для поверхностей `#101922` / `#17232F` / `#1E2D3B`; светлая плашка не нужна. Дополнительные цвета взяты из существующей палитры tokens.css.
 
@@ -30,4 +30,4 @@
 
 Подключать готовый SVG как изображение, не пересобирать надпись HTML-текстом. Самостоятельному изображению дать alt="YETI STREAM". В ссылке с доступным именем использовать alt=""; скрытая тематическая копия должна иметь display:none, чтобы имя не дублировалось. Если SVG вставлен inline, сохранять title / desc и уникальные ID для каждого экземпляра.
 
-`--font-wordmark: "Rubik", "Segoe UI", sans-serif` и `--font-weight-wordmark: 700` нужны только редактируемому текстовому образцу. Готовые SVG не загружают шрифт. Там, где текстовый образец используется, локальный WOFF2 подключается ранним @font-face и preload с font/woff2 и crossorigin; font-display:swap и font-synthesis:none.
+`--font-wordmark: "Rubik", "Segoe UI", sans-serif` и `--font-weight-wordmark: 700` задают текстовую часть бренда; по следующему уточнению пользователя Rubik 400–700 также используется во всём проекте. Готовые SVG не загружают шрифт. Общий локальный variable WOFF2 подключается ранним @font-face и preload с font/woff2 и crossorigin; font-display:swap и font-synthesis:none.

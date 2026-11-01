@@ -5,18 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Дизайн-система · YETI STREAM</title>
-  <!-- Start loading the six specimen font faces before stylesheet discovery. -->
-  <link rel="preload" href="docs/design/assets/fonts/ibm-plex-sans-400-0.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="docs/design/assets/fonts/ibm-plex-sans-500-1.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="docs/design/assets/fonts/ibm-plex-sans-600-2.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="docs/design/assets/fonts/manrope-600-3.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="docs/design/assets/fonts/manrope-700-4.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="docs/design/assets/fonts/rubik-700.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Preload the shared variable font before the main stylesheets. -->
+  <link rel="preload" href="docs/design/assets/fonts/rubik-400-700.woff2" as="font" type="font/woff2" crossorigin>
   <script>
     try { const theme = localStorage.getItem('yeti-design-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch (_) {}
   </script>
-  <link rel="stylesheet" href="tokens.css?v=8338d134461a">
-  <link rel="stylesheet" href="docs/design/assets/fonts.css">
+  <link rel="stylesheet" href="tokens.css?v=c61a04710a9b">
+  <link rel="stylesheet" href="docs/design/assets/fonts.css?v=cec7bf09795d">
   <link rel="stylesheet" href="docs/design/showcase.css?v=89cf0d73babc">
   <script defer src="docs/design/showcase.js?v=e4798a5c9962"></script>
 </head>
@@ -48,6 +43,7 @@
       <a href="#typography"><svg class="icon" aria-hidden="true"><use href="#icon-text-aa"></use></svg>Типографика</a>
       <a href="#components"><svg class="icon" aria-hidden="true"><use href="#icon-stack"></use></svg>Компоненты</a>
       <a href="#forms"><svg class="icon" aria-hidden="true"><use href="#icon-sliders-horizontal"></use></svg>Формы и справка</a>
+      <a href="#field-set"><svg class="icon" aria-hidden="true"><use href="#icon-sliders-horizontal"></use></svg>Набор полей</a>
       <a href="#motion"><svg class="icon" aria-hidden="true"><use href="#icon-cursor-click"></use></svg>Анимации</a>
       <a href="#geometry"><svg class="icon" aria-hidden="true"><use href="#icon-arrows-out-simple"></use></svg>Размеры и иконки</a>
     </nav>
@@ -87,10 +83,10 @@
       </section>
 
       <section id="typography" class="section">
-        <div class="section-heading"><h2>Типографика</h2><p>Три чёткие роли. Все шесть используемых начертаний загружаются заранее при открытии стенда, без ожидания прокрутки или клика.</p></div>
-        <div class="type-row"><div><h3>Название бренда</h3><p class="small secondary">Rubik · Bold 700</p></div><div><p class="wordmark type-wordmark">YETI STREAM</p><p class="small secondary">Только текстовая часть логотипа</p></div></div>
-        <div class="type-row"><div><h3>Заголовки</h3><p class="small secondary">Manrope · 600 / 700</p></div><div><p class="type-heading">Всё важное на своём месте</p><p class="small secondary">32/40 px на широком экране · 24/30 px на узком</p></div></div>
-        <div class="type-row"><div><h3>Интерфейс</h3><p class="small secondary">IBM Plex Sans · 400 / 500 / 600</p></div><div><p class="type-body">Выберите параметры и проверьте результат.</p><p class="type-numbers">Аа Бб Вв Ёё · 0123456789</p><p class="small secondary">Основной текст 16/24 px · подписи 14/20 px</p></div></div>
+        <div class="section-heading"><h2>Типографика</h2><p>Один шрифт — Rubik. Веса 400, 500, 600 и 700 загружаются одним локальным файлом при открытии стенда, без ожидания прокрутки или клика.</p></div>
+        <div class="type-row"><div><h3>Название бренда</h3><p class="small secondary">Rubik · Bold 700</p></div><div><p class="wordmark type-wordmark">YETI STREAM</p><p class="small secondary">Bold 700 — текстовая часть логотипа</p></div></div>
+        <div class="type-row"><div><h3>Заголовки</h3><p class="small secondary">Rubik · 600 / 700</p></div><div><p class="type-heading">Всё важное на своём месте</p><p class="small secondary">32/40 px на широком экране · 24/30 px на узком</p></div></div>
+        <div class="type-row"><div><h3>Интерфейс</h3><p class="small secondary">Rubik · 400 / 500 / 600</p></div><div><p class="type-body">Выберите параметры и проверьте результат.</p><p class="type-numbers">Аа Бб Вв Ёё · 0123456789</p><p class="small secondary">Основной текст 16/24 px · подписи 14/20 px</p></div></div>
       </section>
 
       <section id="components" class="section">
@@ -131,9 +127,57 @@
           </form>
           <div class="form-examples">
             <div class="sample-panel"><div class="heading-help"><h3>Подсказки</h3><button class="help-button" type="button" aria-label="Пояснение к разделу «Подсказки»" aria-describedby="help-guidance" data-help="help-guidance"><span>?</span></button></div><p>Наведите на <strong>?</strong>, нажмите или перейдите к нему клавишей Tab.</p><p class="small secondary">Подсказку можно закрыть клавишей Escape. Фокус остаётся на кнопке.</p></div>
-            <div class="sample-panel"><div class="field"><label for="read-only">Только чтение</label><input id="read-only" value="YETI STREAM" readonly></div><div class="field"><label for="disabled-input">Недоступное поле</label><input id="disabled-input" value="Пример состояния" disabled></div><p class="small secondary">Текст в поле «Только чтение» можно выделить и скопировать.</p></div>
+            <div class="sample-panel"><div class="field"><label for="read-only">Только чтение</label><input id="read-only" value="YETI STREAM" readonly></div><div class="field"><label for="disabled-input">Недоступное поле</label><input id="disabled-input" value="Пример состояния" disabled aria-describedby="disabled-reason"><p id="disabled-reason" class="small secondary">Поле отключено для демонстрации: ввод здесь недоступен.</p></div><p class="small secondary">Текст в поле «Только чтение» можно выделить и скопировать.</p></div>
           </div>
         </div>
+      </section>
+
+      <section id="field-set" class="section">
+        <div class="section-heading"><h2>Набор полей</h2><p>Независимый выбор, один вариант, список, текст и число. Все значения и ограничения демонстрационные; данные не отправляются и не сохраняются.</p></div>
+        <form id="fields-form" novalidate>
+          <div id="fields-errors" class="error-summary" tabindex="-1" aria-labelledby="fields-errors-title" hidden><h3 id="fields-errors-title">Проверьте поля</h3><ul></ul></div>
+          <div class="component-split fields-grid">
+            <div class="sample-panel">
+              <h3>Checkbox</h3><p class="small secondary field-intro">Несколько независимых вариантов. Можно выбрать оба или ни одного.</p>
+              <fieldset class="choice-group"><legend>Что показывать в примере (необязательно)</legend>
+                <label class="choice-row"><input type="checkbox" name="details" value="date"><span>Дату последнего изменения</span></label>
+                <label class="choice-row"><input type="checkbox" name="details" value="name"><span>Полное название записи, даже если оно занимает несколько строк на узком экране</span></label>
+              </fieldset><p class="small secondary field-keyboard">Tab — переход, Space — изменить выбор.</p>
+            </div>
+            <div class="sample-panel">
+              <h3>Radio</h3><p class="small secondary field-intro">Один вариант из короткого списка. Все варианты видны сразу.</p>
+              <fieldset class="choice-group" id="fields-layout-group"><legend>Представление примера (обязательно)</legend>
+                <label class="choice-row"><input id="fields-layout" type="radio" name="layout" value="compact" required aria-describedby="fields-layout-error"><span>Компактное</span></label>
+                <label class="choice-row"><input type="radio" name="layout" value="detailed" required aria-describedby="fields-layout-error"><span>Подробное, с дополнительными сведениями о каждой записи</span></label>
+                <p id="fields-layout-error" class="field-message danger-text" hidden></p>
+              </fieldset><p class="small secondary field-keyboard">Tab — вход и выход из группы, стрелки — выбор, Space — отметить.</p>
+            </div>
+            <div class="sample-panel">
+              <h3>Select</h3><p class="small secondary field-intro">Один вариант из списка, который не нужно постоянно держать на экране.</p>
+              <div class="field"><label for="fields-order">Порядок записей (обязательно)</label>
+                <select id="fields-order" required aria-describedby="fields-order-hint fields-order-value fields-order-error"><option value="">Выберите порядок</option><option value="new">Сначала новые</option><option value="old">Сначала старые</option><option value="name">По полному названию записи в алфавитном порядке, от А до Я</option></select>
+                <p id="fields-order-hint" class="small secondary">Выбор изменяет только значение этого примера.</p><p id="fields-order-value" class="small selected-value" hidden></p><p id="fields-order-error" class="field-message danger-text" hidden></p>
+              </div><p class="small secondary field-keyboard">Tab — переход; стрелки и ввод букв — поиск варианта. Открытие списка зависит от браузера и системы.</p>
+            </div>
+            <div class="sample-panel">
+              <h3>Textarea</h3><p class="small secondary field-intro">Свободный текст из нескольких строк с сохранением переносов.</p>
+              <div class="field"><label for="fields-note">Комментарий к примеру (необязательно)</label><textarea id="fields-note" rows="4" aria-describedby="fields-note-hint fields-note-count fields-note-error" placeholder="Напишите, что нужно учесть"></textarea><p id="fields-note-hint" class="small secondary">До 240 символов, включая пробелы и переносы строк. Лишний текст не обрезается: исправьте его перед проверкой.</p><p id="fields-note-count" class="small secondary">0 из 240 символов</p><p id="fields-note-error" class="field-message danger-text" hidden></p></div>
+              <p class="small secondary field-keyboard">Enter — новая строка, Tab — следующее поле. Высоту можно увеличить вручную.</p>
+            </div>
+            <div class="sample-panel">
+              <h3>Число с единицей</h3><p class="small secondary field-intro">Измеримая величина с известным диапазоном и шагом.</p>
+              <div class="field"><label for="fields-duration">Длительность примера, мин (обязательно)</label><div class="number-with-unit"><input id="fields-duration" type="number" inputmode="numeric" min="1" max="60" step="1" required aria-describedby="fields-duration-hint fields-duration-error"><span aria-hidden="true">мин</span></div><p id="fields-duration-hint" class="small secondary">От 1 до 60 минут, шаг 1 минута. Это ограничение примера, не услуги.</p><p id="fields-duration-error" class="field-message danger-text" hidden></p></div>
+              <p class="small secondary field-keyboard">Стрелки вверх и вниз меняют число на один шаг. Пустое значение отличается от нуля.</p>
+            </div>
+            <div class="sample-panel">
+              <h3>Read-only</h3><p class="small secondary field-intro">Значение доступно для чтения, выделения и копирования.</p>
+              <div class="field"><label for="fields-reference">Полная ссылка примера (только чтение)</label><textarea id="fields-reference" readonly rows="4" aria-describedby="fields-reference-hint">https://example.com/channel/long-demonstration-name-with-additional-details-and-a-reference-0123456789</textarea><p id="fields-reference-hint" class="small secondary">Ссылка задана в примере и здесь не редактируется. Длинное значение переносится целиком.</p></div>
+              <p class="small secondary field-keyboard">Tab — перейти в поле, Ctrl+A / Ctrl+C — выделить и скопировать. Read-only остаётся в порядке фокуса.</p>
+            </div>
+          </div>
+          <div class="button-row form-actions"><button class="btn primary" type="submit">Проверить поля</button><button class="btn ghost" type="reset">Сбросить</button></div>
+          <p class="small secondary fields-footnote">Проверка выполняется в браузере. Неверные значения остаются в полях; ссылки в списке ошибок переводят к месту исправления.</p>
+        </form>
       </section>
 
       <section id="motion" class="section">

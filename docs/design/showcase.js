@@ -265,6 +265,96 @@
     channel.removeAttribute('aria-invalid'); byId('channel-error').hidden = true; byId('form-result').textContent = '';
   });
 
+  // Independent field gallery: native controls, local validation, no persistence.
+  const fieldsForm = byId('fields-form');
+  const fieldsSummary = byId('fields-errors');
+  const note = byId('fields-note');
+  const order = byId('fields-order');
+  const quantity = byId('fields-duration');
+  const radios = [...fieldsForm.querySelectorAll('[name="layout"]')];
+  const visitedFields = new Set();
+  let fieldsSubmitted = false;
+  let fieldsErrorSignature = '';
+  const fieldRules = [
+    { id: 'fields-layout', controls: radios, message: () => radios.some(radio => radio.checked) ? '' : 'Выберите представление примера.' },
+    { id: order.id, controls: [order], message: () => order.value ? '' : 'Выберите порядок записей.' },
+    { id: note.id, controls: [note], message: () => note.value.length <= 240 ? '' : 'Сократите комментарий до 240 символов.' },
+    { id: quantity.id, controls: [quantity], message: () => {
+      if (quantity.validity.badInput) return 'Введите целое число минут от 1 до 60.';
+      if (quantity.value === '') return 'Укажите длительность примера в минутах.';
+      const value = quantity.valueAsNumber;
+      return Number.isFinite(value) && Number.isInteger(value) && value >= 1 && value <= 60 ? '' : 'Введите целое число минут от 1 до 60.';
+    } }
+  ];
+  function validateField(rule) {
+    const message = rule.message();
+    const error = byId(rule.id + '-error');
+    error.textContent = message;
+    error.hidden = !message;
+    rule.controls.forEach(control => control.setAttribute('aria-invalid', String(Boolean(message))));
+    return message;
+  }
+  function updateFieldsSummary() {
+    const list = fieldsSummary.querySelector('ul');
+    const invalid = fieldRules.filter(rule => rule.message());
+    const signature = fieldsSubmitted ? JSON.stringify(invalid.map(rule => [rule.id, rule.message()])) : '';
+    // Preserve focused links when blur/input has not changed the errors.
+    if (signature === fieldsErrorSignature) return invalid;
+    fieldsErrorSignature = signature;
+    list.replaceChildren();
+    if (fieldsSubmitted && invalid.length) {
+      invalid.forEach(rule => {
+        const item = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#' + rule.id;
+        link.textContent = rule.message();
+        link.addEventListener('click', event => { event.preventDefault(); byId(rule.id).focus(); });
+        item.append(link); list.append(item);
+      });
+      fieldsSummary.hidden = false;
+    } else fieldsSummary.hidden = true;
+    return invalid;
+  }
+  function updateFieldDetails() {
+    byId('fields-note-count').textContent = `${note.value.length} из 240 символов`;
+    byId('fields-order-value').hidden = !order.value;
+    byId('fields-order-value').textContent = order.value ? 'Выбрано: ' + order.selectedOptions[0].textContent : '';
+  }
+  fieldRules.forEach(rule => rule.controls.forEach(control => {
+    control.addEventListener('blur', event => {
+      if (radios.includes(control) && radios.includes(event.relatedTarget)) return;
+      visitedFields.add(rule.id); validateField(rule); updateFieldsSummary();
+    });
+    const onEdit = () => {
+      updateFieldDetails();
+      if (visitedFields.has(rule.id) || fieldsSubmitted) validateField(rule);
+      updateFieldsSummary();
+    };
+    control.addEventListener('input', onEdit);
+    control.addEventListener('change', onEdit);
+  }));
+  fieldsForm.addEventListener('submit', event => {
+    event.preventDefault(); fieldsSubmitted = true;
+    fieldRules.forEach(rule => { visitedFields.add(rule.id); validateField(rule); });
+    const invalid = updateFieldsSummary();
+    if (invalid.length > 1) fieldsSummary.focus();
+    else if (invalid.length) byId(invalid[0].id).focus();
+    else notify('Поля заполнены верно. Проверено локально, данные не отправлялись.');
+  });
+  fieldsForm.addEventListener('reset', () => {
+    fieldsSubmitted = false; fieldsErrorSignature = ''; visitedFields.clear(); fieldsSummary.hidden = true;
+    fieldsSummary.querySelector('ul').replaceChildren();
+    fieldRules.forEach(rule => {
+      rule.controls.forEach(control => control.removeAttribute('aria-invalid'));
+      byId(rule.id + '-error').hidden = true;
+      byId(rule.id + '-error').textContent = '';
+    });
+    // Native reset applies default values after this event.
+    setTimeout(updateFieldDetails, 0);
+    closeNotice();
+  });
+  updateFieldDetails();
+
   const motionDuration = byId('motion-duration');
   function describeMotion() {
     root.dataset.reduced = String(reduced());

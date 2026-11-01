@@ -16,12 +16,7 @@ FILES = frozenset({
     "/docs/design/showcase.css",
     "/docs/design/showcase.js",
     "/docs/design/assets/fonts.css",
-    "/docs/design/assets/fonts/ibm-plex-sans-400-0.ttf",
-    "/docs/design/assets/fonts/ibm-plex-sans-500-1.ttf",
-    "/docs/design/assets/fonts/ibm-plex-sans-600-2.ttf",
-    "/docs/design/assets/fonts/manrope-600-3.ttf",
-    "/docs/design/assets/fonts/manrope-700-4.ttf",
-    "/docs/design/assets/fonts/rubik-700.woff2",
+    "/docs/design/assets/fonts/rubik-400-700.woff2",
 })
 
 
