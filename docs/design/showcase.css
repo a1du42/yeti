@@ -278,7 +278,12 @@ dialog::backdrop { background: var(--color-scrim); }
 .auth-card .field-error { color: var(--color-danger); }
 #auth-open-letter, #auth-confirm-email { margin-top: var(--space-4); }
 @media (max-width: 1279px) { .auth-layout { grid-template-columns: minmax(0, 1fr); } .auth-card { width: 100%; max-width: 32rem; margin-inline: auto; } }
-@media (max-width: 767px) { .auth-card { padding: var(--space-4); } .auth-tabs button { flex-direction: column; gap: var(--space-1); } }
+.auth-tabs button { flex-direction: row; flex-wrap: nowrap; }
+.auth-tabs button span { white-space: nowrap; overflow-wrap: normal; }
+@media (max-width: 767px) {
+  .auth-card { padding: var(--space-4); }
+  .auth-tabs button { gap: var(--space-1); padding-inline: 0; font-size: var(--text-small); }
+}
 
 #notification-symbol { display: flex; color: var(--color-success); }
 .table-example, .notification-example { margin-top: var(--space-6); }

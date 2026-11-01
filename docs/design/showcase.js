@@ -10,6 +10,19 @@
   const duration = name => parseFloat(css(name)) || 0;
   const activeAnimations = new Map();
 
+  // Native min/max validate a number but do not constrain typed or pasted input.
+  document.querySelectorAll('input[type="number"][min][max]').forEach(input => {
+    const constrain = () => {
+      if (input.value === '' || !Number.isFinite(input.valueAsNumber)) return;
+      const value = input.valueAsNumber;
+      const bounded = Math.min(Number(input.max), Math.max(Number(input.min), value));
+      if (bounded !== value) input.value = String(bounded);
+    };
+    // Registered before local form listeners so calculations see the bounded value.
+    input.addEventListener('input', constrain);
+    input.addEventListener('change', constrain);
+  });
+
   function reveal(element, token = '--dur-base', transform = 'translateY(8px)') {
     activeAnimations.get(element)?.cancel();
     if (!element.animate) return;
@@ -763,19 +776,61 @@
   });
   updateAuthProviders();
   const timezoneSelect = byId('auth-register-timezone');
+  const timezoneDate = new Date();
+  const timezoneCities = {
+    UTC: 'Всемирное время', 'Europe/Moscow': 'Москва', 'Europe/Minsk': 'Минск',
+    'Europe/Kiev': 'Киев', 'Europe/Kyiv': 'Киев', 'Europe/London': 'Лондон',
+    'Europe/Berlin': 'Берлин', 'Europe/Paris': 'Париж', 'Europe/Istanbul': 'Стамбул',
+    'Asia/Yekaterinburg': 'Екатеринбург', 'Asia/Novosibirsk': 'Новосибирск',
+    'Asia/Krasnoyarsk': 'Красноярск', 'Asia/Irkutsk': 'Иркутск',
+    'Asia/Yakutsk': 'Якутск', 'Asia/Vladivostok': 'Владивосток',
+    'Asia/Kamchatka': 'Петропавловск-Камчатский', 'Europe/Kaliningrad': 'Калининград',
+    'Europe/Samara': 'Самара', 'Asia/Almaty': 'Алматы', 'Asia/Tashkent': 'Ташкент',
+    'Asia/Dubai': 'Дубай', 'Asia/Tbilisi': 'Тбилиси', 'Asia/Yerevan': 'Ереван',
+    'Asia/Baku': 'Баку', 'Asia/Bishkek': 'Бишкек', 'Asia/Tokyo': 'Токио',
+    'America/New_York': 'Нью-Йорк', 'America/Chicago': 'Чикаго',
+    'America/Los_Angeles': 'Лос-Анджелес'
+  };
+  function timezoneLabel(zone) {
+    try {
+      const part = style => new Intl.DateTimeFormat('ru-RU', { timeZone: zone, timeZoneName: style })
+        .formatToParts(timezoneDate).find(item => item.type === 'timeZoneName')?.value;
+      const name = timezoneCities[zone] || part('longGeneric') || zone;
+      const offset = (part('longOffset') || '').replace(/GMT|UTC/, 'UTC');
+      return name + (offset ? ' · ' + offset : ' · смещение недоступно');
+    } catch (_) {
+      return (timezoneCities[zone] || zone) + ' · смещение недоступно';
+    }
+  }
   let detectedTimezone = '';
   try { detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) {}
   let timezones = ['UTC', 'Europe/Moscow', 'Europe/Minsk', 'Asia/Almaty', 'Asia/Tashkent', 'America/New_York', 'America/Chicago', 'America/Los_Angeles'];
   try { if (Intl.supportedValuesOf) timezones = ['UTC', ...Intl.supportedValuesOf('timeZone')]; } catch (_) {}
   if (detectedTimezone && !timezones.includes(detectedTimezone)) timezones.push(detectedTimezone);
-  for (const zone of [...new Set(timezones)]) { const option = document.createElement('option'); option.value = zone; option.textContent = zone; timezoneSelect.append(option); }
+  const timezoneOptions = [...new Set(timezones)].map(zone => ({ zone, label: timezoneLabel(zone) }));
+  const labelCounts = new Map();
+  timezoneOptions.forEach(({ label }) => labelCounts.set(label, (labelCounts.get(label) || 0) + 1));
+  timezoneOptions.sort((a, b) => a.label.localeCompare(b.label, 'ru'));
+  for (const { zone, label } of timezoneOptions) {
+    const option = document.createElement('option');
+    option.value = zone;
+    option.textContent = label + (labelCounts.get(label) > 1 ? ' (' + zone + ')' : '');
+    timezoneSelect.append(option);
+  }
+  function updateTimezoneSelection() {
+    const selected = byId('auth-timezone-selected');
+    selected.hidden = !timezoneSelect.value;
+    selected.textContent = timezoneSelect.value ? 'Выбрано: ' + timezoneSelect.selectedOptions[0].textContent : '';
+  }
   function updateAuthTimezone() {
     const manual = !detectedTimezone || byId('auth-timezone-unavailable').checked;
     byId('auth-timezone-field').hidden = !manual; timezoneSelect.required = manual;
     timezoneSelect.value = manual ? '' : detectedTimezone;
     timezoneSelect.removeAttribute('aria-invalid'); byId('auth-register-timezone-error').hidden = true;
-    byId('auth-timezone-detected').textContent = manual ? 'Не удалось определить часовой пояс. Выберите его из списка.' : 'Часовой пояс: ' + detectedTimezone + ' · определён браузером';
+    byId('auth-timezone-detected').textContent = manual ? 'Не удалось определить часовой пояс. Выберите его из списка.' : 'Часовой пояс: ' + timezoneLabel(detectedTimezone) + '. Определён автоматически.';
+    updateTimezoneSelection();
   }
+  timezoneSelect.addEventListener('change', updateTimezoneSelection);
   byId('auth-timezone-unavailable').addEventListener('change', () => { clearAuthFeedback(); updateAuthTimezone(); updateAuthSummary(byId('auth-register-form')); });
   updateAuthTimezone();
   addEventListener('hashchange', clearAuthFeedback);
