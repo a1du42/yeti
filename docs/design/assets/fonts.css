@@ -37,10 +37,10 @@
   src: url(fonts/manrope-700-4.ttf) format('truetype');
 }
 @font-face {
-  font-family: 'Nunito Sans';
+  font-family: 'Rubik';
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   font-stretch: normal;
   font-display: swap;
-  src: url(fonts/nunito-sans-800-5.ttf) format('truetype');
+  src: url(fonts/rubik-700.woff2) format('woff2');
 }

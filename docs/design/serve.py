@@ -10,6 +10,9 @@ FILES = frozenset({
     "/design-system.html",
     "/tokens.css",
     "/logo.svg",
+    "/logo-dark.svg",
+    "/logo-mark.svg",
+    "/logo-mark-dark.svg",
     "/docs/design/showcase.css",
     "/docs/design/showcase.js",
     "/docs/design/assets/fonts.css",
@@ -18,7 +21,7 @@ FILES = frozenset({
     "/docs/design/assets/fonts/ibm-plex-sans-600-2.ttf",
     "/docs/design/assets/fonts/manrope-600-3.ttf",
     "/docs/design/assets/fonts/manrope-700-4.ttf",
-    "/docs/design/assets/fonts/nunito-sans-800-5.ttf",
+    "/docs/design/assets/fonts/rubik-700.woff2",
 })
 
 

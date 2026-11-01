@@ -36,10 +36,18 @@ code { font: var(--text-small)/var(--line-body) var(--font-code); overflow-wrap:
 .skip-link:focus { transform: none; }
 .sidebar { position: fixed; inset: 0 auto 0 0; width: var(--showcase-aside); padding: var(--space-6) var(--space-4); border-right: var(--rule-default) solid var(--color-line); background: var(--color-surface); display: flex; flex-direction: column; z-index: var(--z-menu); overflow-y: auto; }
 .brand { display: flex; align-items: center; gap: var(--space-3); color: var(--color-text); text-decoration: none; }
-.brand-mark { width: 48px; height: 48px; border-radius: var(--radius-control); display: grid; place-items: center; background: var(--color-palette-light-surface); flex-shrink: 0; }
 .brand img { display: block; }
 .wordmark { font-family: var(--font-wordmark); font-weight: var(--font-weight-wordmark); line-height: 1.25; letter-spacing: 0; font-style: normal; white-space: nowrap; }
-.brand .wordmark { font-size: 16px; }
+.brand-logo { display: block; width: 100%; max-width: 208px; }
+.brand-logo img, .identity-logo img { display: block; width: 100%; height: auto; }
+.identity-logo { display: block; width: 100%; max-width: 400px; }
+.brand-logo .logo-dark, .identity-logo .logo-dark { display: none; }
+:root[data-theme="dark"] .logo-light { display: none; }
+:root[data-theme="dark"] .logo-dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .logo-light { display: none; }
+  :root:not([data-theme]) .logo-dark { display: block; }
+}
 .sidebar-caption { margin: var(--space-8) var(--space-3) var(--space-3); font-size: var(--text-small); color: var(--color-text-secondary); }
 .navigation { display: grid; gap: var(--space-1); }
 .navigation a { min-height: var(--size-control); display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-control); color: var(--color-text-secondary); font-size: var(--text-small); text-decoration: none; }
@@ -65,9 +73,6 @@ main { max-width: var(--showcase-width); margin: auto; padding: 0 var(--space-8)
 .intro-note { margin-top: var(--space-4); max-width: 46ch; }
 .text-link { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-5); min-height: 44px; }
 .identity-sample { min-height: 280px; border: var(--rule-default) solid var(--color-line); border-radius: var(--radius-panel); background: var(--color-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-6); gap: var(--space-3); }
-.identity-mark { width: 160px; height: 160px; border-radius: var(--radius-dialog); display: grid; place-items: center; background: var(--color-palette-light-surface); }
-.identity-mark img { display: block; max-width: 100%; }
-.identity-sample .wordmark { font-size: var(--text-title-mobile); }
 .principles { grid-column: 1/-1; display: flex; justify-content: space-between; gap: var(--space-6); padding-top: var(--space-6); margin: 0; border-top: var(--rule-default) solid var(--color-line); }
 .principles dt { font-weight: 500; }
 .principles dd { margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--text-small); }
@@ -202,7 +207,6 @@ dialog::backdrop { background: var(--color-scrim); }
   .theme-control { gap: var(--space-2); }.theme-control label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }.theme-control select { min-width: 140px; max-width: 180px; }
   .section { padding-block: var(--space-8); }.intro { grid-template-columns: minmax(0,1fr); gap: var(--space-6); }
   .lead { font-size: var(--text-lead); }.identity-sample { min-height: 240px; }
-  .identity-mark { width: 128px; height: 128px; }.identity-mark img { width: 112px; height: 112px; }
   .principles { flex-direction: column; gap: var(--space-4); }
   .brand-colors { grid-template-columns: minmax(0,1fr); }.color-swatch { min-height: 144px; padding: var(--space-5); }
   .color-swatch strong { font-size: var(--text-title-mobile); }

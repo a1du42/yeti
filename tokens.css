@@ -40,8 +40,8 @@
   --color-brand-primary: var(--color-palette-graphite);
   --color-brand-accent: var(--color-palette-blue);
   --color-brand-detail: var(--color-palette-ice);
-  --font-wordmark: "Nunito Sans", "Segoe UI", sans-serif;
-  --font-weight-wordmark: 800;
+  --font-wordmark: "Rubik", "Segoe UI", sans-serif;
+  --font-weight-wordmark: 700;
   --font-display: "Manrope", "Segoe UI", sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
   --font-code: ui-monospace, "Cascadia Code", monospace;

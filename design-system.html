@@ -11,13 +11,13 @@
   <link rel="preload" href="docs/design/assets/fonts/ibm-plex-sans-600-2.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="docs/design/assets/fonts/manrope-600-3.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="docs/design/assets/fonts/manrope-700-4.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="docs/design/assets/fonts/nunito-sans-800-5.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="docs/design/assets/fonts/rubik-700.woff2" as="font" type="font/woff2" crossorigin>
   <script>
     try { const theme = localStorage.getItem('yeti-design-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch (_) {}
   </script>
-  <link rel="stylesheet" href="tokens.css?v=f64b9d727bbd">
+  <link rel="stylesheet" href="tokens.css?v=8338d134461a">
   <link rel="stylesheet" href="docs/design/assets/fonts.css">
-  <link rel="stylesheet" href="docs/design/showcase.css?v=4f1ce8183f25">
+  <link rel="stylesheet" href="docs/design/showcase.css?v=89cf0d73babc">
   <script defer src="docs/design/showcase.js?v=e4798a5c9962"></script>
 </head>
 <body>
@@ -39,8 +39,7 @@
     <symbol id="icon-arrow-right" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></symbol></svg>
   <aside class="sidebar" aria-label="Навигация по дизайн-системе">
     <a class="brand" href="#overview" aria-label="YETI STREAM, начало дизайн-системы">
-      <span class="brand-mark"><img src="logo.svg" width="40" height="40" alt=""></span>
-      <span class="wordmark">YETI STREAM</span>
+      <span class="brand-logo"><img class="logo-light" src="logo.svg" width="1320" height="560" alt=""><img class="logo-dark" src="logo-dark.svg" width="1320" height="560" alt=""></span>
     </a>
     <p class="sidebar-caption">Дизайн-система</p>
     <nav id="navigation" class="navigation" aria-label="Разделы">
@@ -65,7 +64,7 @@
     <main id="main" tabindex="-1">
       <section id="overview" class="intro section">
         <div class="intro-copy"><p class="eyebrow">YETI STREAM / дизайн-система</p><h1>Графит и лёд</h1><p class="lead">Спокойный интерфейс.<br>Понятные действия. Короткие переходы.</p><p class="secondary intro-note">Здесь можно посмотреть и попробовать элементы будущего приложения. Все примеры работают локально.</p><a class="text-link" href="#components">Перейти к компонентам <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a></div>
-        <div class="identity-sample"><span class="identity-mark"><img src="logo.svg" width="144" height="144" alt="Знак YETI STREAM: йети над синим потоком"></span><span class="wordmark">YETI STREAM</span><span class="small secondary">Nunito Sans ExtraBold · 800</span></div>
+        <div class="identity-sample"><span class="identity-logo"><img class="logo-light" src="logo.svg" width="1320" height="560" alt="YETI STREAM: йети над синим потоком"><img class="logo-dark" src="logo-dark.svg" width="1320" height="560" alt="YETI STREAM: йети над синим потоком"></span><span class="small secondary">Rubik Bold · 700 · надпись в кривых</span></div>
         <dl class="principles"><div><dt>Один акцент</dt><dd>Синий направляет внимание</dd></div><div><dt>Две темы</dt><dd>Общая структура и контраст</dd></div><div><dt>До 800 мс</dt><dd>Движение объясняет действие</dd></div></dl>
       </section>
 
@@ -89,7 +88,7 @@
 
       <section id="typography" class="section">
         <div class="section-heading"><h2>Типографика</h2><p>Три чёткие роли. Все шесть используемых начертаний загружаются заранее при открытии стенда, без ожидания прокрутки или клика.</p></div>
-        <div class="type-row"><div><h3>Название бренда</h3><p class="small secondary">Nunito Sans · ExtraBold 800</p></div><div><p class="wordmark type-wordmark">YETI STREAM</p><p class="small secondary">Только текстовая часть логотипа</p></div></div>
+        <div class="type-row"><div><h3>Название бренда</h3><p class="small secondary">Rubik · Bold 700</p></div><div><p class="wordmark type-wordmark">YETI STREAM</p><p class="small secondary">Только текстовая часть логотипа</p></div></div>
         <div class="type-row"><div><h3>Заголовки</h3><p class="small secondary">Manrope · 600 / 700</p></div><div><p class="type-heading">Всё важное на своём месте</p><p class="small secondary">32/40 px на широком экране · 24/30 px на узком</p></div></div>
         <div class="type-row"><div><h3>Интерфейс</h3><p class="small secondary">IBM Plex Sans · 400 / 500 / 600</p></div><div><p class="type-body">Выберите параметры и проверьте результат.</p><p class="type-numbers">Аа Бб Вв Ёё · 0123456789</p><p class="small secondary">Основной текст 16/24 px · подписи 14/20 px</p></div></div>
       </section>
