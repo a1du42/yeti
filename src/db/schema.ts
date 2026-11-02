@@ -1,4 +1,5 @@
-import { bigint, boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 const date = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
 
@@ -58,3 +59,39 @@ export const rateLimit = pgTable("rate_limit", {
   count: integer("count").notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
+
+export const payment = pgTable("payment", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "restrict" }),
+  requestKey: text("request_key").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  currency: text("currency").notNull().default("USD"),
+  feePayer: text("fee_payer").notNull(),
+  providerId: text("provider_id").unique(),
+  checkoutUrl: text("checkout_url"),
+  status: text("status").notNull().default("creating"),
+  creditedAt: date("credited_at"),
+  creditCents: integer("credit_cents").notNull().default(0),
+  createdAt: date("created_at").notNull().defaultNow(),
+  updatedAt: date("updated_at").notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex("payment_user_request_idx").on(table.userId, table.requestKey),
+  index("payment_user_created_idx").on(table.userId, table.createdAt),
+  check("payment_amount_positive", sql`${table.amountCents} > 0`),
+  check("payment_currency_usd", sql`${table.currency} = 'USD'`),
+  check("payment_fee_payer", sql`${table.feePayer} in ('merchant', 'customer')`),
+]);
+
+// Неизменяемые зачисления. Каждая подтверждённая общая сумма учитывается один раз.
+export const paymentCredit = pgTable("payment_credit", {
+  id: text("id").primaryKey(),
+  paymentId: text("payment_id").notNull().references(() => payment.id, { onDelete: "restrict" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "restrict" }),
+  amountCents: integer("amount_cents").notNull(),
+  confirmedTotalCents: integer("confirmed_total_cents").notNull(),
+  createdAt: date("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("payment_credit_user_idx").on(table.userId),
+  uniqueIndex("payment_credit_total_idx").on(table.paymentId, table.confirmedTotalCents),
+  check("payment_credit_positive", sql`${table.amountCents} > 0`),
+]);

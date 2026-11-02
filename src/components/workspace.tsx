@@ -15,7 +15,7 @@ import { NAME_MAX, nameError as validateName } from "@/lib/validation";
 import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/timezones";
 import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
-import { PaymentSandbox } from "@/components/payment-sandbox";
+import { PaymentPanel } from "@/components/payment-panel";
 import styles from "./workspace.module.css";
 
 export type CurrentUser = {
@@ -408,7 +408,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
             </section>
           </Tabs.Content>
           <Tabs.Content className={styles.panel} value="payment" forceMount data-visible={view === "payment"} inert={view !== "payment"} aria-hidden={view !== "payment"}>
-            <PaymentSandbox onCalculated={setToast} />
+            <PaymentPanel active={view === "payment"} onConfirmed={setToast} />
           </Tabs.Content>
         </div>
       </Tabs.Root>

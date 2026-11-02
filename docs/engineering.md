@@ -1,6 +1,6 @@
 # Инженерные правила
 
-Действующий стек: Next.js App Router + TypeScript, PostgreSQL, Drizzle и Better Auth; локальная почта — Mailpit. Структура, команды и настройки заданы в [development.md](development.md), границы — в [decisions.md](decisions.md). Текущая реализация ограничена авторизацией и оболочкой `/app`; бизнес-функции добавляются отдельными задачами.
+Действующий стек: Next.js App Router + TypeScript, PostgreSQL, Drizzle и Better Auth; локальная почта — Mailpit. Структура, команды и настройки заданы в [development.md](development.md), границы — в [decisions.md](decisions.md). Текущая реализация включает авторизацию, оболочку `/app` и отдельно разрешённое пополнение через Heleket в USD. Остальные бизнес-функции добавляются отдельными задачами. [Контракт оплаты](payments.md).
 
 ## Границы
 

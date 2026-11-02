@@ -313,17 +313,17 @@
   showAccountLocation();
 
   const amount = byId('payment-amount');
-  const rubles = value => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(value);
+  const dollars = value => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'USD', currencyDisplay: 'code', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
   function updatePayment(showError = false) {
     const valid = amount.value !== '' && amount.validity.valid;
-    byId('payment-credit').textContent = valid ? rubles(amount.valueAsNumber) : '—';
-    byId('payment-total').textContent = valid ? rubles(amount.valueAsNumber) : '—';
+    byId('payment-credit').textContent = valid ? dollars(amount.valueAsNumber) : '—';
+    byId('payment-total').textContent = valid ? dollars(amount.valueAsNumber) : '—';
     byId('payment-result-text').textContent = '';
     byId('payment-result').hidden = true;
     if (showError || amount.hasAttribute('aria-invalid')) {
       amount.setAttribute('aria-invalid', String(!valid));
       byId('payment-error').hidden = valid;
-      byId('payment-error').textContent = valid ? '' : 'Введите целое число от 100 до 50 000 ₽.';
+      byId('payment-error').textContent = valid ? '' : 'Введите сумму от 1 до 1000 USD с точностью до цента.';
     }
     return valid;
   }
@@ -336,7 +336,7 @@
     event.preventDefault();
     if (!updatePayment(true)) { amount.focus(); return; }
     byId('payment-result').hidden = false;
-    byId('payment-result-text').textContent = 'Пример расчёта готов: ' + rubles(amount.valueAsNumber) + '. Деньги не списаны, тестовый баланс не изменился.';
+    byId('payment-result-text').textContent = 'Пример расчёта готов: ' + dollars(amount.valueAsNumber) + '. Деньги не списаны, тестовый баланс не изменился.';
   });
 
   const settingsForm = byId('account-settings-form');
