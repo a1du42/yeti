@@ -44,8 +44,8 @@ class PreviewHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    with ThreadingHTTPServer(("127.0.0.1", 100), PreviewHandler) as server:
-        print("Design system: http://127.0.0.1:100/", flush=True)
+    with ThreadingHTTPServer(("127.0.0.1", 101), PreviewHandler) as server:
+        print("Design system: http://127.0.0.1:101/", flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

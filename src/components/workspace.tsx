@@ -362,6 +362,7 @@ export function Workspace({ user }: { user: CurrentUser }) {
                   <div className={styles.field}>
                     <label htmlFor="profile-timezone">Часовой пояс <span className={styles.optionalHint}>(обязательно)</span></label>
                     <select id="profile-timezone" name="timezone" value={timezone} onChange={(event) => setTimezone(event.target.value)} required aria-describedby="profile-timezone-hint">
+                      {!timezone && <option value="">Выберите часовой пояс</option>}
                       {zones.length ? zones.map(({ value, label }) => <option value={value} key={value}>{label}</option>)
                         : <option value={profile.timezone}>Уточняем название часового пояса…</option>}
                     </select>

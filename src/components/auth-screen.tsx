@@ -15,7 +15,7 @@ type FieldName = keyof Fields;
 type Errors = Partial<Record<FieldName, string>>;
 const labels: Record<FieldName, string> = { name: "Имя", email: "Email", password: "Пароль", repeat: "Повторите пароль", timezone: "Часовой пояс" };
 
-function AccessForm({ mode, active, goLogin, goRecovery }: { mode: Mode; active: boolean; goLogin: () => void; goRecovery: () => void }) {
+function AccessForm({ mode, active, goLogin, goRecovery, googleEnabled }: { mode: Mode; active: boolean; goLogin: () => void; goRecovery: () => void; googleEnabled: boolean }) {
   const [fields, setFields] = useState<Fields>({ name: "", email: "", password: "", repeat: "", timezone: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [shown, setShown] = useState({ password: false, repeat: false });
@@ -144,6 +144,12 @@ function AccessForm({ mode, active, goLogin, goRecovery }: { mode: Mode; active:
   };
 
   const errorEntries = Object.entries(errors).filter((entry): entry is [FieldName, string] => !!entry[1]);
+  const googleLogin = () => void run(async signal => {
+    let timezone = "";
+    try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch { /* Не подставлять неизвестную зону. */ }
+    const result = await authClient.signIn.social({ provider: "google", callbackURL: "/app", errorCallbackURL: "/app/auth?oauthError=1", additionalData: { timezone }, fetchOptions: { signal } });
+    if (!signal.aborted && result.error) setNotice({ text: "Не удалось начать вход через Google. Попробуйте ещё раз", error: true });
+  });
   const passwordField = (field: "password" | "repeat") => {
     const label = field === "password" ? mode === "reset" ? "Новый пароль" : "Пароль" : mode === "reset" ? "Повторите новый пароль" : "Повторите пароль";
     const toggleLabel = `${shown[field] ? "Скрыть" : "Показать"} ${field === "repeat" ? "повтор пароля" : "пароль"}`;
@@ -167,6 +173,10 @@ function AccessForm({ mode, active, goLogin, goRecovery }: { mode: Mode; active:
   const resetDone = mode === "reset" && notice && !notice.error;
   return <form className={styles.form} noValidate onSubmit={submit} aria-busy={busy}>
     <h2>{mode === "login" ? "Быстрый старт" : mode === "register" ? "Создать аккаунт" : mode === "recovery" ? "Восстановить доступ" : "Новый пароль"}</h2>
+    {mode === "login" && googleEnabled && <>
+      <IconTooltip label="Продолжить через Google"><button type="button" className={`button ${styles.provider}`} aria-label="Продолжить через Google" disabled={busy} onClick={googleLogin}><img src="/assets/google.png" width="20" height="20" alt="" /></button></IconTooltip>
+      <p className={styles.divider}>или по электронной почте</p>
+    </>}
     {mode === "recovery" && <p className={styles.description}>Укажите почту аккаунта. Мы отправим ссылку для установки нового пароля.</p>}
     {errorEntries.length > 1 && <div ref={summary} tabIndex={-1} className="error-summary"><strong>Проверьте поля</strong><ul>{errorEntries.map(([field, message]) => <li key={field}><a href={`#${id(field)}`} onClick={event => { event.preventDefault(); document.getElementById(id(field))?.focus(); }}>{message}</a></li>)}</ul></div>}
     {notice && <div className={`${styles.notice} ${notice.error ? styles.noticeError : mode === "reset" ? styles.savedToast : ""}`} role={notice.error ? "alert" : "status"}>{notice.error ? <WarningCircle size={20} aria-hidden="true" /> : <CheckCircle size={20} aria-hidden="true" />}<p>{notice.text}</p></div>}
@@ -193,7 +203,7 @@ function AccessForm({ mode, active, goLogin, goRecovery }: { mode: Mode; active:
   </form>;
 }
 
-export function AuthScreen({ initialMode, verified, invalid }: { initialMode: Mode; verified: boolean; invalid: boolean }) {
+export function AuthScreen({ initialMode, verified, invalid, googleEnabled, oauthError }: { initialMode: Mode; verified: boolean; invalid: boolean; googleEnabled: boolean; oauthError: boolean }) {
   const [pointerFocus, setPointerFocus] = useState(false);
   const [mode, setMode] = useState<Mode>(initialMode);
   const loginTab = useRef<HTMLButtonElement>(null);
@@ -213,6 +223,7 @@ export function AuthScreen({ initialMode, verified, invalid }: { initialMode: Mo
       <div className={styles.brand}><Logo /></div>
       <h1 className="sr-only">Вход в YETI STREAM</h1>
       <section className={styles.card} aria-label="Доступ к аккаунту">
+        {oauthError && <p className={`${styles.banner} ${styles.noticeError}`} role="alert"><WarningCircle size={20} aria-hidden="true" />Не удалось войти через Google. Попробуйте ещё раз или войдите по email.</p>}
         {verified && <p className={styles.banner}><CheckCircle size={20} aria-hidden="true" />Почта подтверждена. Теперь можно войти.</p>}
         {invalid && <p className={`${styles.banner} ${styles.noticeError}`}><WarningCircle size={20} aria-hidden="true" />Ссылка недействительна или уже использована. Запросите новую.</p>}
         <Tabs.Root value={mode} onValueChange={value => setMode(value as Mode)}>
@@ -223,7 +234,7 @@ export function AuthScreen({ initialMode, verified, invalid }: { initialMode: Mo
             </Tabs.Trigger>)}
           </Tabs.List>
           <div className={styles.panels}>{modes.map(value => <Tabs.Content key={value} forceMount value={value} className={styles.panel} inert={mode !== value} aria-hidden={mode !== value} tabIndex={-1}>
-            <AccessForm mode={value} active={mode === value} goLogin={goLogin} goRecovery={goRecovery} />
+            <AccessForm mode={value} active={mode === value} goLogin={goLogin} goRecovery={goRecovery} googleEnabled={googleEnabled} />
           </Tabs.Content>)}</div>
         </Tabs.Root>
       </section>

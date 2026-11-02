@@ -14,6 +14,7 @@ const cities: Record<string, string> = {
 };
 
 export function timezoneLabel(zone: string, date = new Date()): string {
+  if (!zone) return "Часовой пояс не указан";
   try {
     const part = (style: "longGeneric" | "longOffset") => new Intl.DateTimeFormat("ru-RU", { timeZone: zone, timeZoneName: style }).formatToParts(date).find(item => item.type === "timeZoneName")?.value;
     const name = cities[zone] || part("longGeneric") || zone;

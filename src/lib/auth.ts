@@ -9,6 +9,7 @@ import { getDb } from "@/lib/db";
 import { getServerEnv } from "@/lib/env";
 import { scheduleAuthMail } from "@/lib/mail";
 import { emailError, isTimezone, nameError, passwordError } from "@/lib/validation";
+import { googleOidcValidation } from "@/lib/google";
 
 const nameSchema = z.string().superRefine((value, context) => {
   const error = nameError(value);
@@ -56,6 +57,17 @@ function createAuth() {
     appName: "YETI STREAM",
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
+    plugins: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? [googleOidcValidation(env.GOOGLE_CLIENT_ID)] : [],
+    onAPIError: { errorURL: env.BETTER_AUTH_URL + "/app/auth?oauthError=1" },
+    socialProviders: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+        prompt: "select_account",
+        accessType: "online",
+        includeGrantedScopes: false,
+      },
+    } : {},
     trustedOrigins: [new URL(env.BETTER_AUTH_URL).origin],
     database: drizzleAdapter(getDb(), { provider: "pg", schema, transaction: true }),
     emailAndPassword: {
@@ -101,6 +113,7 @@ function createAuth() {
       cookieCache: { enabled: false },
     },
     account: {
+      encryptOAuthTokens: true,
       accountLinking: { enabled: false, disableImplicitLinking: true },
     },
     verification: { storeIdentifier: "hashed", storeInDatabase: true },

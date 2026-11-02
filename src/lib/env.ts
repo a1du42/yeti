@@ -10,6 +10,8 @@ const schema = z.object({
     return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password && !url.search && !url.hash && url.pathname === "/";
   }),
   BETTER_AUTH_SECRET: z.string().min(32),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
   SMTP_HOST: z.string().min(1).refine(noNewlines),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535),
   SMTP_FROM: z.string().min(1).refine(noNewlines),

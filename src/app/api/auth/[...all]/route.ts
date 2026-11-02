@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { getAuth } from "@/lib/auth";
 import { getServerEnv } from "@/lib/env";
 import { confirmEmail } from "@/lib/email-verification";
+import { isTimezone } from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +13,8 @@ const genericLogin = "Не удалось войти. Проверьте поч�
 async function handle(request: Request) {
   const url = new URL(request.url);
   const path = url.pathname.slice("/api/auth".length);
-  const allowed = request.method === "POST" ? postPaths.has(path) : path === "/get-session" || path === "/verify-email" || /^\/reset-password\/[^/]+$/.test(path);
+  const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  const allowed = request.method === "POST" ? postPaths.has(path) || (googleEnabled && path === "/sign-in/social") : path === "/get-session" || path === "/verify-email" || /^\/reset-password\/[^/]+$/.test(path) || (googleEnabled && path === "/callback/google");
   if (!allowed) return Response.json({ message: "Способ входа недоступен" }, { status: 404 });
   const env = getServerEnv();
   const origin = new URL(env.BETTER_AUTH_URL).origin;
@@ -45,6 +47,12 @@ async function handle(request: Request) {
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error();
       data = parsed as Record<string, unknown>;
     } catch { return Response.json({ message: "Проверьте отправленные данные" }, { status: 400 }); }
+    if (path === "/sign-in/social") {
+      if (data.provider !== "google" || data.idToken) return Response.json({ message: "Способ входа недоступен" }, { status: 404 });
+      const extra = data.additionalData as Record<string, unknown> | undefined;
+      const zone = extra?.timezone;
+      data = { provider: "google", callbackURL: origin + "/app", errorCallbackURL: origin + "/app/auth?oauthError=1", disableRedirect: data.disableRedirect === true, additionalData: { timezone: typeof zone === "string" && isTimezone(zone) ? zone : "" } };
+    }
     if (path === "/sign-up/email" || path === "/send-verification-email") data.callbackURL = origin + "/app/auth?verified=1";
     if (path === "/request-password-reset") data.redirectTo = origin + "/app/auth/reset";
     if (path === "/sign-in/email") delete data.callbackURL;
