@@ -17,6 +17,7 @@ button:disabled { cursor: wait; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 a { color: var(--color-link); text-underline-offset: .2em; }
 :focus-visible { outline: var(--rule-focus) solid var(--color-focus); outline-offset: var(--focus-offset); }
+[data-popup-focus][tabindex="-1"]:focus { outline: none; }
 h1, h2, h3, p { margin: 0; }
 h1, h2, h3 { font-family: var(--font-display); line-height: var(--line-heading); overflow-wrap: anywhere; }
 h1 { font-size: var(--text-title); font-weight: 700; letter-spacing: -.02em; }

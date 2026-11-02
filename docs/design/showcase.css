@@ -78,6 +78,7 @@ button, select, input[type="checkbox"], input[type="radio"] { cursor: pointer; }
 button { color: inherit; }
 button, a, input, select, textarea, [tabindex] { -webkit-tap-highlight-color: transparent; }
 :focus-visible, .sample-focus { outline: var(--rule-focus) solid var(--color-focus); outline-offset: var(--focus-offset); }
+[data-popup-focus][tabindex="-1"]:focus { outline: none; }
 main:focus { outline: none; }
 ::selection { background: var(--color-selected); color: var(--color-selected-text); }
 h1, h2, h3, p { margin: 0; }

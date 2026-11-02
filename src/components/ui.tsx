@@ -5,6 +5,11 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 import { Desktop, Sun, Moon } from "@phosphor-icons/react";
 import styles from "./ui.module.css";
 
+export function focusPopupOnOpen(event: Event) {
+  event.preventDefault();
+  if (event.target instanceof HTMLElement) event.target.focus({ preventScroll: true });
+}
+
 export function Logo() {
   return <span className={styles.logo} role="img" aria-label="YETI STREAM">
     {/* Готовые SVG содержат надпись в кривых. */}

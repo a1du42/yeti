@@ -37,7 +37,7 @@ export function GoogleAccess({ linking = false, disabled = false, active = true,
     }
   }
   const label = linking ? `Подключить ${service}` : `Продолжить через ${service}`;
-  return <div className={styles.access} aria-busy={pending}>
+  return <div className={styles.access} data-linking={linking} aria-busy={pending}>
     <IconTooltip label={label}><button type="button" className={`button ${styles.provider}`} aria-label={label} disabled={disabled || pending} onClick={start}>
       <img src={provider === "google" ? "/assets/google.png" : "/assets/yandex.ico"} width="20" height="20" alt="" />{linking && <span>Подключить {service}</span>}
     </button></IconTooltip>

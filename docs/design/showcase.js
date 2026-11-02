@@ -5,6 +5,11 @@
   document.addEventListener('pointerdown', () => { root.dataset.tabPointer = 'true'; }, true);
   document.addEventListener('keydown', () => { delete root.dataset.tabPointer; }, true);
   const byId = id => document.getElementById(id);
+  function focusPopup(element) {
+    element.tabIndex = -1;
+    element.setAttribute('data-popup-focus', '');
+    element.focus({ preventScroll: true });
+  }
   const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
   const reduceToggle = byId('reduce-motion');
   const reduced = () => motionPreference.matches || reduceToggle.checked;
@@ -113,7 +118,7 @@
     menuToggle.setAttribute('aria-expanded', String(open));
     if (open) {
       reveal(navigation, '--dur-short', 'translateY(-4px)');
-      navigation.querySelector('a[aria-current], a')?.focus();
+      focusPopup(navigation);
     }
   });
   navigation.addEventListener('click', event => {
@@ -162,8 +167,6 @@
     reveal(notice);
     if (manualCopy) {
       byId('copy-value').value = manualCopy;
-      byId('copy-value').focus();
-      byId('copy-value').select();
     } else startNoticeTimer();
   }
   byId('close-notification').addEventListener('click', closeNotice);
@@ -233,6 +236,8 @@
     accountMenu.hidden = false;
     accountTrigger.setAttribute('aria-expanded', 'true');
     reveal(accountMenu, '--dur-short', 'translateY(4px)');
+    closeHelp();
+    focusPopup(accountMenu);
   }
   accountTrigger.addEventListener('click', () => accountMenu.hidden ? openAccountMenu() : closeAccountMenu());
   byId('account-sign-out').addEventListener('click', () => {
@@ -242,7 +247,6 @@
   accountTrigger.addEventListener('keydown', event => {
     if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
     event.preventDefault(); openAccountMenu();
-    accountItems[event.key === 'ArrowDown' ? 0 : accountItems.length - 1].focus();
   });
   account.addEventListener('focusout', event => { if (!account.contains(event.relatedTarget)) closeAccountMenu(); });
   accountMenu.addEventListener('keydown', event => {

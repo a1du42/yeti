@@ -13,7 +13,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { NAME_MAX, nameError as validateName } from "@/lib/validation";
 import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/timezones";
-import { IconTooltip, Logo, ThemeChoices } from "@/components/ui";
+import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
 import styles from "./workspace.module.css";
 
@@ -95,6 +95,20 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
     }
   }, [view]);
   useEffect(() => () => requestRef.current?.abort(), []);
+  useEffect(() => {
+    const phone = window.matchMedia("(max-width: 767px)");
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const closeNavigation = () => {
+      setDrawerOpen(false);
+      setMenuOpen(null);
+    };
+    phone.addEventListener("change", closeNavigation);
+    desktop.addEventListener("change", closeNavigation);
+    return () => {
+      phone.removeEventListener("change", closeNavigation);
+      desktop.removeEventListener("change", closeNavigation);
+    };
+  }, []);
 
   function navigate(next: View, focusContent = true) {
     focusAfterNavigation.current = focusContent;
@@ -207,6 +221,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
     return <Popover.Root open={menuOpen === position} onOpenChange={(open) => setMenuOpen(open ? position : null)}>
       <Popover.Trigger asChild>
         <button className={`${styles.accountTrigger} ${isBottom ? styles.moreTrigger : ""}`}
+          data-active={isBottom && isAccount}
           aria-label={isBottom ? "Ещё: меню аккаунта" : `Меню аккаунта: ${profile.name}`}
           onKeyDown={(event) => {
             if (event.key === "ArrowDown" || event.key === "ArrowUp") {
@@ -222,12 +237,18 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
       <Popover.Portal>
         <Popover.Content aria-label="Аккаунт" className={styles.accountPopup} side={position === "header" ? "bottom" : "top"}
           align={position === "sidebar" ? "start" : "end"} sideOffset={8} collisionPadding={16}
+          tabIndex={-1}
+          data-popup-focus
+          onOpenAutoFocus={focusPopupOnOpen}
           onKeyDown={handleMenuKeys}
           onFocusOutside={() => setMenuOpen(null)}
           onCloseAutoFocus={(event) => {
-            if (skipMenuFocusRestore.current) {
+            const triggerVisible = window.matchMedia(position === "sidebar" ? "(min-width: 1024px)"
+              : position === "header" ? "(min-width: 768px) and (max-width: 1023px)" : "(max-width: 767px)").matches;
+            if (skipMenuFocusRestore.current || !triggerVisible) {
               event.preventDefault();
               skipMenuFocusRestore.current = false;
+              if (!triggerVisible) heading.current?.focus({ preventScroll: true });
             }
           }}>
           <div className={styles.popupIdentity}>
@@ -236,10 +257,10 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
           </div>
           <div className={styles.themeRow}><ThemeChoices /></div>
           <nav className={styles.accountLinks} aria-label="Аккаунт">
-            <Link href="/app?tab=settings" onClick={(event) => handleLink(event, "settings")}>
+            <Link href="/app?tab=settings" aria-current={view === "settings" ? "page" : undefined} onClick={(event) => handleLink(event, "settings")}>
               <Gear size={20} weight="regular" aria-hidden="true" /><span>Настройки</span>
             </Link>
-            <Link href="/app?tab=payment" onClick={(event) => handleLink(event, "payment")}>
+            <Link href="/app?tab=payment" aria-current={view === "payment" ? "page" : undefined} onClick={(event) => handleLink(event, "payment")}>
               <Wallet size={20} weight="regular" aria-hidden="true" /><span>Оплата</span>
             </Link>
           </nav>
@@ -270,7 +291,14 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
           </button></Dialog.Trigger>
           <Dialog.Portal>
             <Dialog.Overlay className={styles.drawerOverlay} />
-            <Dialog.Content className={styles.drawer} aria-describedby={undefined}>
+            <Dialog.Content className={styles.drawer} aria-describedby={undefined}
+              tabIndex={-1} data-popup-focus onOpenAutoFocus={focusPopupOnOpen}
+              onCloseAutoFocus={(event) => {
+                if (!window.matchMedia("(min-width: 768px) and (max-width: 1023px)").matches) {
+                  event.preventDefault();
+                  heading.current?.focus({ preventScroll: true });
+                }
+              }}>
               <div className={styles.drawerHeading}>
                 <Dialog.Title>Разделы</Dialog.Title>
                 <Dialog.Close asChild><button className={styles.iconButton} aria-label="Закрыть меню"><X size={22} aria-hidden="true" /></button></Dialog.Close>
@@ -278,8 +306,8 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
               {navigation(() => setDrawerOpen(false))}
               <div className={styles.drawerAccount}>
                 <strong>{profile.name}</strong><span>{profile.email}</span>
-                <Link href="/app?tab=settings" onClick={(event) => handleLink(event, "settings")}><Gear size={20} aria-hidden="true" />Настройки</Link>
-                <Link href="/app?tab=payment" onClick={(event) => handleLink(event, "payment")}><Wallet size={20} aria-hidden="true" />Оплата</Link>
+                <Link href="/app?tab=settings" aria-current={view === "settings" ? "page" : undefined} onClick={(event) => handleLink(event, "settings")}><Gear size={20} aria-hidden="true" />Настройки</Link>
+                <Link href="/app?tab=payment" aria-current={view === "payment" ? "page" : undefined} onClick={(event) => handleLink(event, "payment")}><Wallet size={20} aria-hidden="true" />Оплата</Link>
               </div>
             </Dialog.Content>
           </Dialog.Portal>
@@ -294,117 +322,103 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
     <main className={styles.main} id="workspace-main" tabIndex={-1}>
       <div className={styles.pageIntro}>
         <div className={styles.eyebrow}>YETI STREAM</div>
-        <h1 tabIndex={-1} ref={heading}>{isAccount ? "Аккаунт" : "Личный кабинет"}</h1>
-        <p>{isAccount ? "Данные профиля и доступные действия." : `Здравствуйте, ${profile.name}. Выберите вкладку, чтобы посмотреть содержимое.`}</p>
+        <h1 tabIndex={-1} ref={heading}>{labels[view]}</h1>
+        <p>{isAccount ? "Данные профиля и доступные действия." : `Здравствуйте, ${profile.name}.`}</p>
       </div>
 
-      <div className={styles.groups}>
-        <section className={styles.group} data-visible={!isAccount} inert={isAccount} aria-hidden={isAccount}>
-          <Tabs.Root value={view === "two" ? "two" : "one"} onValueChange={(next) => navigate(next as View, false)}>
-            <Tabs.List className={styles.tabList} aria-label="Тестовые разделы">
-              <Tabs.Trigger className={styles.tab} value="one"><SquaresFour size={20} weight="regular" aria-hidden="true" /><span>Тестовая 1</span></Tabs.Trigger>
-              <Tabs.Trigger className={styles.tab} value="two"><Flask size={20} weight="regular" aria-hidden="true" /><span>Тестовая 2</span></Tabs.Trigger>
-            </Tabs.List>
-            <div className={styles.panels}>
-              <Tabs.Content className={styles.panel} value="one" forceMount inert={view !== "one"} aria-hidden={view !== "one"}>
-                <div className={styles.panelHeading}><UserCircle size={26} weight="regular" aria-hidden="true" /><h2>Ваш профиль</h2></div>
-                <p className={styles.muted}>Сведения аккаунта, с которым выполнен вход.</p>
-                <dl className={styles.profileData}>
-                  <div><dt>Имя</dt><dd>{profile.name}</dd></div>
-                  <div><dt>Электронная почта</dt><dd>{profile.email}</dd></div>
-                  <div><dt>Подтверждение почты</dt><dd><span className={profile.emailVerified ? styles.successStatus : styles.neutralStatus}>
-                    {profile.emailVerified ? <CheckCircle size={18} weight="regular" aria-hidden="true" /> : <WarningCircle size={18} weight="regular" aria-hidden="true" />}
-                    {profile.emailVerified ? "Адрес подтверждён" : "Адрес не подтверждён"}
-                  </span></dd></div>
-                  <div><dt>Часовой пояс</dt><dd>{localeReady ? timezoneLabel(profile.timezone) : "Уточняем название часового пояса…"}</dd></div>
-                  <div><dt>Аккаунт создан</dt><dd>{localeReady ? formatCreatedAt(profile.createdAt, profile.timezone) : "Загружаем дату…"}</dd></div>
-                </dl>
-                <Link href="/app?tab=settings" className={styles.secondaryButton} onClick={(event) => handleLink(event, "settings")}>
-                  <Gear size={20} weight="regular" aria-hidden="true" />Открыть настройки
-                </Link>
-              </Tabs.Content>
-              <Tabs.Content className={styles.panel} value="two" forceMount inert={view !== "two"} aria-hidden={view !== "two"}>
-                <div className={styles.emptyState}>
-                  <Flask size={40} weight="regular" aria-hidden="true" className={styles.emptyIcon} />
-                  <h2>Вторая тестовая вкладка</h2>
-                  <p>Здесь пока нет данных. Вкладка помогает проверить навигацию, оформление и работу кабинета на разных экранах.</p>
-                  <Link href="/app?tab=one" className={styles.secondaryButton} onClick={(event) => handleLink(event, "one")}>
-                    <ArrowLeft size={20} weight="regular" aria-hidden="true" />К профилю
-                  </Link>
-                </div>
-              </Tabs.Content>
+      <Tabs.Root value={view} onValueChange={(next) => navigate(next as View, false)}>
+        {isAccount && <Tabs.List className={styles.tabList} aria-label="Разделы профиля">
+          <Tabs.Trigger className={styles.tab} value="settings"><Gear size={20} weight="regular" aria-hidden="true" /><span>Настройки</span></Tabs.Trigger>
+          <Tabs.Trigger className={styles.tab} value="payment"><Wallet size={20} weight="regular" aria-hidden="true" /><span>Оплата</span></Tabs.Trigger>
+        </Tabs.List>}
+        <div className={styles.panels}>
+          <section className={styles.panel} aria-label={labels.one} data-visible={view === "one"} inert={view !== "one"} aria-hidden={view !== "one"}>
+            <div className={styles.panelHeading}><UserCircle size={26} weight="regular" aria-hidden="true" /><h2>Ваш профиль</h2></div>
+            <p className={styles.muted}>Сведения аккаунта, с которым выполнен вход.</p>
+            <dl className={styles.profileData}>
+              <div><dt>Имя</dt><dd>{profile.name}</dd></div>
+              <div><dt>Электронная почта</dt><dd>{profile.email}</dd></div>
+              <div><dt>Подтверждение почты</dt><dd><span className={profile.emailVerified ? styles.successStatus : styles.neutralStatus}>
+                {profile.emailVerified ? <CheckCircle size={18} weight="regular" aria-hidden="true" /> : <WarningCircle size={18} weight="regular" aria-hidden="true" />}
+                {profile.emailVerified ? "Адрес подтверждён" : "Адрес не подтверждён"}
+              </span></dd></div>
+              <div><dt>Часовой пояс</dt><dd>{localeReady ? timezoneLabel(profile.timezone) : "Уточняем название часового пояса…"}</dd></div>
+              <div><dt>Аккаунт создан</dt><dd>{localeReady ? formatCreatedAt(profile.createdAt, profile.timezone) : "Загружаем дату…"}</dd></div>
+            </dl>
+            <Link href="/app?tab=settings" className={styles.secondaryButton} onClick={(event) => handleLink(event, "settings")}>
+              <Gear size={20} weight="regular" aria-hidden="true" />Открыть настройки
+            </Link>
+          </section>
+          <section className={styles.panel} aria-label={labels.two} data-visible={view === "two"} inert={view !== "two"} aria-hidden={view !== "two"}>
+            <div className={styles.emptyState}>
+              <Flask size={40} weight="regular" aria-hidden="true" className={styles.emptyIcon} />
+              <h2>Второй тестовый раздел</h2>
+              <p>Здесь пока нет данных. Раздел помогает проверить навигацию, оформление и работу кабинета на разных экранах.</p>
+              <Link href="/app?tab=one" className={styles.secondaryButton} onClick={(event) => handleLink(event, "one")}>
+                <ArrowLeft size={20} weight="regular" aria-hidden="true" />К профилю
+              </Link>
             </div>
-          </Tabs.Root>
-        </section>
+          </section>
 
-        <section className={styles.group} data-visible={isAccount} inert={!isAccount} aria-hidden={!isAccount}>
-          <Tabs.Root value={view === "payment" ? "payment" : "settings"} onValueChange={(next) => navigate(next as View, false)}>
-            <Tabs.List className={styles.tabList} aria-label="Разделы аккаунта">
-              <Tabs.Trigger className={styles.tab} value="settings"><Gear size={20} weight="regular" aria-hidden="true" /><span>Настройки</span></Tabs.Trigger>
-              <Tabs.Trigger className={styles.tab} value="payment"><Wallet size={20} weight="regular" aria-hidden="true" /><span>Оплата</span></Tabs.Trigger>
-            </Tabs.List>
-            <div className={styles.panels}>
-              <Tabs.Content className={styles.panel} value="settings" forceMount inert={view !== "settings"} aria-hidden={view !== "settings"}>
-                <div className={styles.panelHeading}><Gear size={26} weight="regular" aria-hidden="true" /><h2>Настройки профиля</h2></div>
-                <form onSubmit={saveSettings} noValidate className={styles.settingsForm} aria-busy={pending === "save"}>
-                  <div className={styles.field}>
-                    <label htmlFor="profile-name">Имя <span className={styles.optionalHint}>(обязательно)</span></label>
-                    <input id="profile-name" name="name" autoComplete="name" value={name} ref={nameInput} required
-                      aria-invalid={Boolean(nameError)} aria-describedby={`profile-name-hint${nameError ? " profile-name-error" : ""}`}
-                      onChange={(event) => { setName(event.target.value); if (nameError) setNameError(validateName(event.target.value) || ""); }}
-                      onBlur={() => setNameError(validateName(name) || "")} />
-                    <p className={styles.fieldHint} id="profile-name-hint">До {NAME_MAX} символов.</p>
-                    {nameError && <p className={styles.fieldError} id="profile-name-error">{nameError}</p>}
-                  </div>
-                  <div className={styles.field}>
-                    <label htmlFor="profile-email">Электронная почта</label>
-                    <input id="profile-email" name="email" type="email" value={profile.email} autoComplete="email" readOnly aria-describedby="profile-email-hint" />
-                    <p className={styles.fieldHint} id="profile-email-hint">Только чтение. Изменение адреса здесь недоступно.</p>
-                  </div>
-                  <div className={styles.field}>
-                    <label htmlFor="profile-timezone">Часовой пояс <span className={styles.optionalHint}>(обязательно)</span></label>
-                    <select id="profile-timezone" name="timezone" value={timezone} onChange={(event) => setTimezone(event.target.value)} required aria-describedby="profile-timezone-hint">
-                      {!timezone && <option value="">Выберите часовой пояс</option>}
-                      {zones.length ? zones.map(({ value, label }) => <option value={value} key={value}>{label}</option>)
-                        : <option value={profile.timezone}>Уточняем название часового пояса…</option>}
-                    </select>
-                    <p className={styles.fieldHint} id="profile-timezone-hint"><Globe size={16} weight="regular" aria-hidden="true" />{localeReady ? timezoneLabel(timezone) : "Уточняем название часового пояса…"}</p>
-                  </div>
-                  {saveError && <div className={styles.errorMessage} role="alert"><WarningCircle size={20} weight="regular" aria-hidden="true" /><div>{saveError}<br /><Link href="/app/auth">Перейти ко входу</Link></div></div>}
-                  <div className={styles.formActions}>
-                    <button type="submit" className={styles.primaryButton} disabled={pending !== null}>{pending === "save" ? "Сохраняем…" : "Сохранить"}</button>
-                    <button type="button" className={styles.secondaryButton} onClick={resetSettings} disabled={pending !== null}>Отмена</button>
-                  </div>
-                </form>
-                <section className={styles.accessMethods} aria-labelledby="access-methods">
-                  <h3 id="access-methods">Способы входа</h3>
-                  <p className={styles.muted}>Подключённые способы открывают один аккаунт. Можно подключить сервис с другой почтой. Почта профиля сохранится.</p>
-                  {params.get("oauthError") === "1" && <p className={styles.errorMessage} role="alert"><WarningCircle size={20} aria-hidden="true" />Не удалось подключить сервис. Повторите попытку. Если аккаунт сервиса уже подключён к другому аккаунту YETI STREAM, выберите другой.</p>}
-                  <div className={styles.accessMethod}><strong>Email и пароль</strong><span className={providers.includes("credential") ? styles.successStatus : styles.neutralStatus}>{providers.includes("credential") ? <CheckCircle size={20} aria-hidden="true" /> : <SignOut size={20} aria-hidden="true" />}{providers.includes("credential") ? "Подключён" : "Пароль не задан"}</span>
-                    {!providers.includes("credential") && <Link href="/app/auth" className={styles.secondaryButton}>Задать пароль через «Не помню пароль»</Link>}
-                  </div>
-                  {(googleEnabled || providers.includes("google")) && <div className={styles.accessMethod}><strong>Google</strong><span className={providers.includes("google") ? styles.successStatus : styles.neutralStatus}>{providers.includes("google") ? <CheckCircle size={20} aria-hidden="true" /> : <WarningCircle size={20} aria-hidden="true" />}{providers.includes("google") ? "Подключён" : "Не подключён"}</span>
-                    {googleEnabled && !providers.includes("google") && <GoogleAccess linking active={view === "settings"} />}
-                  </div>}
-                  {(yandexEnabled || providers.includes("yandex")) && <div className={styles.accessMethod}><strong>Яндекс ID</strong><span className={providers.includes("yandex") ? styles.successStatus : styles.neutralStatus}>{providers.includes("yandex") ? <CheckCircle size={20} aria-hidden="true" /> : <WarningCircle size={20} aria-hidden="true" />}{providers.includes("yandex") ? "Подключён" : "Не подключён"}</span>
-                    {yandexEnabled && !providers.includes("yandex") && <GoogleAccess provider="yandex" linking active={view === "settings"} />}
-                  </div>}
-                </section>
-              </Tabs.Content>
-              <Tabs.Content className={styles.panel} value="payment" forceMount inert={view !== "payment"} aria-hidden={view !== "payment"}>
-                <div className={styles.emptyState}>
-                  <Wallet size={40} weight="regular" aria-hidden="true" className={styles.emptyIcon} />
-                  <h2>Оплата пока недоступна</h2>
-                  <p>Пополнение и история операций появятся после подключения оплаты. Сейчас платёжные действия недоступны.</p>
-                  <Link href="/app?tab=settings" className={styles.secondaryButton} onClick={(event) => handleLink(event, "settings")}>
-                    <Gear size={20} weight="regular" aria-hidden="true" />Открыть настройки
-                  </Link>
-                </div>
-              </Tabs.Content>
+          <Tabs.Content className={styles.panel} value="settings" forceMount data-visible={view === "settings"} inert={view !== "settings"} aria-hidden={view !== "settings"}>
+            <div className={styles.panelHeading}><Gear size={26} weight="regular" aria-hidden="true" /><h2>Настройки профиля</h2></div>
+            <form onSubmit={saveSettings} noValidate className={styles.settingsForm} aria-busy={pending === "save"}>
+              <div className={styles.field}>
+                <label htmlFor="profile-name">Имя <span className={styles.optionalHint}>(обязательно)</span></label>
+                <input id="profile-name" name="name" autoComplete="name" value={name} ref={nameInput} required
+                  aria-invalid={Boolean(nameError)} aria-describedby={`profile-name-hint${nameError ? " profile-name-error" : ""}`}
+                  onChange={(event) => { setName(event.target.value); if (nameError) setNameError(validateName(event.target.value) || ""); }}
+                  onBlur={() => setNameError(validateName(name) || "")} />
+                <p className={styles.fieldHint} id="profile-name-hint">До {NAME_MAX} символов.</p>
+                {nameError && <p className={styles.fieldError} id="profile-name-error">{nameError}</p>}
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="profile-email">Электронная почта</label>
+                <input id="profile-email" name="email" type="email" value={profile.email} autoComplete="email" readOnly aria-describedby="profile-email-hint" />
+                <p className={styles.fieldHint} id="profile-email-hint">Только чтение. Изменение адреса здесь недоступно.</p>
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="profile-timezone">Часовой пояс <span className={styles.optionalHint}>(обязательно)</span></label>
+                <select id="profile-timezone" name="timezone" value={timezone} onChange={(event) => setTimezone(event.target.value)} required aria-describedby="profile-timezone-hint">
+                  {!timezone && <option value="">Выберите часовой пояс</option>}
+                  {zones.length ? zones.map(({ value, label }) => <option value={value} key={value}>{label}</option>)
+                    : <option value={profile.timezone}>Уточняем название часового пояса…</option>}
+                </select>
+                <p className={styles.fieldHint} id="profile-timezone-hint"><Globe size={16} weight="regular" aria-hidden="true" />{localeReady ? timezoneLabel(timezone) : "Уточняем название часового пояса…"}</p>
+              </div>
+              {saveError && <div className={styles.errorMessage} role="alert"><WarningCircle size={20} weight="regular" aria-hidden="true" /><div>{saveError}<br /><Link href="/app/auth">Перейти ко входу</Link></div></div>}
+              <div className={styles.formActions}>
+                <button type="submit" className={styles.primaryButton} disabled={pending !== null}>{pending === "save" ? "Сохраняем…" : "Сохранить"}</button>
+                <button type="button" className={styles.secondaryButton} onClick={resetSettings} disabled={pending !== null}>Отмена</button>
+              </div>
+            </form>
+            <section className={styles.accessMethods} aria-labelledby="access-methods">
+              <h3 id="access-methods">Способы входа</h3>
+              <p className={styles.muted}>Подключённые способы открывают один аккаунт. Можно подключить сервис с другой почтой. Почта профиля сохранится.</p>
+              {params.get("oauthError") === "1" && <p className={styles.errorMessage} role="alert"><WarningCircle size={20} aria-hidden="true" />Не удалось подключить сервис. Повторите попытку. Если аккаунт сервиса уже подключён к другому аккаунту YETI STREAM, выберите другой.</p>}
+              <div className={styles.accessMethod}><strong>Email и пароль</strong><span className={providers.includes("credential") ? styles.successStatus : styles.neutralStatus}>{providers.includes("credential") ? <CheckCircle size={20} aria-hidden="true" /> : <SignOut size={20} aria-hidden="true" />}{providers.includes("credential") ? "Подключён" : "Пароль не задан"}</span>
+                {!providers.includes("credential") && <Link href="/app/auth" className={styles.secondaryButton}>Задать пароль через «Не помню пароль»</Link>}
+              </div>
+              {(googleEnabled || providers.includes("google")) && <div className={styles.accessMethod}><strong>Google</strong><span className={providers.includes("google") ? styles.successStatus : styles.neutralStatus}>{providers.includes("google") ? <CheckCircle size={20} aria-hidden="true" /> : <WarningCircle size={20} aria-hidden="true" />}{providers.includes("google") ? "Подключён" : "Не подключён"}</span>
+                {googleEnabled && !providers.includes("google") && <GoogleAccess linking active={view === "settings"} />}
+              </div>}
+              {(yandexEnabled || providers.includes("yandex")) && <div className={styles.accessMethod}><strong>Яндекс ID</strong><span className={providers.includes("yandex") ? styles.successStatus : styles.neutralStatus}>{providers.includes("yandex") ? <CheckCircle size={20} aria-hidden="true" /> : <WarningCircle size={20} aria-hidden="true" />}{providers.includes("yandex") ? "Подключён" : "Не подключён"}</span>
+                {yandexEnabled && !providers.includes("yandex") && <GoogleAccess provider="yandex" linking active={view === "settings"} />}
+              </div>}
+            </section>
+          </Tabs.Content>
+          <Tabs.Content className={styles.panel} value="payment" forceMount data-visible={view === "payment"} inert={view !== "payment"} aria-hidden={view !== "payment"}>
+            <div className={styles.emptyState}>
+              <Wallet size={40} weight="regular" aria-hidden="true" className={styles.emptyIcon} />
+              <h2>Оплата пока недоступна</h2>
+              <p>Пополнение и история операций появятся после подключения оплаты. Сейчас платёжные действия недоступны.</p>
+              <Link href="/app?tab=settings" className={styles.secondaryButton} onClick={(event) => handleLink(event, "settings")}>
+                <Gear size={20} weight="regular" aria-hidden="true" />Открыть настройки
+              </Link>
             </div>
-          </Tabs.Root>
-        </section>
-      </div>
+          </Tabs.Content>
+        </div>
+      </Tabs.Root>
     </main>
 
     <nav className={styles.bottomNav} aria-label="Основные разделы">

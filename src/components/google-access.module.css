@@ -8,3 +8,8 @@
 .error { display: flex; align-items: center; gap: 8px; color: var(--color-danger); font-size: var(--text-small); }
 .error svg, .progress svg { flex-shrink: 0; }
 @media (prefers-reduced-motion: reduce) { .provider, .progress { transition-duration: var(--dur-reduced); } .provider:active:not(:disabled) { transform: none; } }
+
+.access[data-linking="true"] { justify-items: start; max-width: 100%; }
+.access[data-linking="true"] .provider { width: auto; max-width: 100%; }
+.access[data-linking="true"] .progress { justify-content: flex-start; }
+.access[data-linking="true"] .progress[data-visible="false"] { display: none; }
