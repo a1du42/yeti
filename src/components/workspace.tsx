@@ -7,11 +7,11 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as Popover from "@radix-ui/react-popover";
 import * as Tabs from "@radix-ui/react-tabs";
 import {
-  ArrowLeft, CaretUpDown, CheckCircle, Flask, Gear, Globe,
+  ArrowLeft, CaretUpDown, CheckCircle, Flask, Gear,
   List, SignOut, SquaresFour, UserCircle, Wallet, WarningCircle, X,
 } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
-import { NAME_MAX, nameError as validateName } from "@/lib/validation";
+import { nameError as validateName } from "@/lib/validation";
 import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/timezones";
 import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
@@ -374,25 +374,22 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
               <div className={styles.field}>
                 <label htmlFor="profile-name">Имя <span className={styles.optionalHint}>(обязательно)</span></label>
                 <input id="profile-name" name="name" autoComplete="name" value={name} ref={nameInput} required
-                  aria-invalid={Boolean(nameError)} aria-describedby={`profile-name-hint${nameError ? " profile-name-error" : ""}`}
+                  aria-invalid={Boolean(nameError)} aria-describedby={nameError ? "profile-name-error" : undefined}
                   onChange={(event) => { setName(event.target.value); if (nameError) setNameError(validateName(event.target.value) || ""); }}
                   onBlur={() => setNameError(validateName(name) || "")} />
-                <p className={styles.fieldHint} id="profile-name-hint">До {NAME_MAX} символов.</p>
                 {nameError && <p className={styles.fieldError} id="profile-name-error">{nameError}</p>}
               </div>
               <div className={styles.field}>
                 <label htmlFor="profile-email">Электронная почта</label>
-                <input id="profile-email" name="email" type="email" value={profile.email} autoComplete="email" readOnly aria-describedby="profile-email-hint" />
-                <p className={styles.fieldHint} id="profile-email-hint">Только чтение. Изменение адреса здесь недоступно.</p>
+                <input id="profile-email" name="email" type="email" value={profile.email} autoComplete="email" readOnly />
               </div>
               <div className={styles.field}>
                 <label htmlFor="profile-timezone">Часовой пояс <span className={styles.optionalHint}>(обязательно)</span></label>
-                <select id="profile-timezone" name="timezone" value={timezone} onChange={(event) => setTimezone(event.target.value)} required aria-describedby="profile-timezone-hint">
+                <select id="profile-timezone" name="timezone" value={timezone} onChange={(event) => setTimezone(event.target.value)} required>
                   {!timezone && <option value="">Выберите часовой пояс</option>}
                   {zones.length ? zones.map(({ value, label }) => <option value={value} key={value}>{label}</option>)
                     : <option value={profile.timezone}>Уточняем название часового пояса…</option>}
                 </select>
-                <p className={styles.fieldHint} id="profile-timezone-hint"><Globe size={16} weight="regular" aria-hidden="true" />{localeReady ? timezoneLabel(timezone) : "Уточняем название часового пояса…"}</p>
               </div>
               {saveError && <div className={styles.errorMessage} role="alert"><WarningCircle size={20} weight="regular" aria-hidden="true" /><div>{saveError}<br /><Link href="/app/auth">Перейти ко входу</Link></div></div>}
               <div className={styles.formActions}>

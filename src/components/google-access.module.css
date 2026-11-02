@@ -3,14 +3,14 @@
 .provider img { display: block; object-fit: contain; }
 .provider:active:not(:disabled) { transform: scale(.98); }
 .provider:disabled { opacity: .65; }
-.progress { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 24px; margin: 0; font-size: var(--text-small); color: var(--color-text-secondary); opacity: 0; transition: opacity var(--dur-short) var(--ease-out); }
-.progress[data-visible="true"] { opacity: 1; }
-.progress[data-visible="false"] { display: none; }
 .error { display: flex; align-items: center; gap: 8px; color: var(--color-danger); font-size: var(--text-small); }
-.error svg, .progress svg { flex-shrink: 0; }
-@media (prefers-reduced-motion: reduce) { .provider, .progress { transition-duration: var(--dur-reduced); } .provider:active:not(:disabled) { transform: none; } }
+.error svg { flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) { .provider { transition-duration: var(--dur-reduced); } .provider:active:not(:disabled) { transform: none; } }
 
 .access[data-linking="true"] { justify-items: start; max-width: 100%; }
 .access[data-linking="true"] .provider { width: auto; max-width: 100%; }
-.access[data-linking="true"] .progress { justify-content: flex-start; }
 
+
+.spinner { flex-shrink: 0; animation: service-spin var(--dur-max) linear infinite; }
+@keyframes service-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

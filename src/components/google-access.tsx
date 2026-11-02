@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SignIn, WarningCircle } from "@phosphor-icons/react";
+import { CircleNotch, WarningCircle } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { IconTooltip } from "@/components/ui";
 import styles from "./google-access.module.css";
@@ -37,11 +37,11 @@ export function GoogleAccess({ linking = false, disabled = false, active = true,
     }
   }
   const label = linking ? `Подключить ${service}` : `Продолжить через ${service}`;
-  return <div className={styles.access} data-linking={linking} aria-busy={pending}>
-    <IconTooltip label={label}><button type="button" className={`button ${styles.provider}`} aria-label={label} disabled={disabled || pending} onClick={start}>
-      <img src={provider === "google" ? "/assets/google.png" : "/assets/yandex.ico"} width="20" height="20" alt="" />{linking && <span>Подключить {service}</span>}
+  return <div className={styles.access} data-linking={linking}>
+    <IconTooltip label={label}><button type="button" className={`button ${styles.provider}`} aria-label={label} aria-busy={pending} disabled={disabled || pending} onClick={start}>
+      {pending ? <CircleNotch className={styles.spinner} size={20} weight="regular" aria-hidden="true" /> : <img src={provider === "google" ? "/assets/google.png" : "/assets/yandex.ico"} width="20" height="20" alt="" />}{linking && <span>Подключить {service}</span>}
     </button></IconTooltip>
-    <p className={styles.progress} data-visible={pending} role="status">{pending && <><SignIn size={20} aria-hidden="true" />Переходим в {service}…</>}</p>
+    <span className="sr-only" role="status">{pending ? `Переходим в ${service}…` : ""}</span>
     {error && <p className={styles.error} role="alert"><WarningCircle size={20} aria-hidden="true" />{error}</p>}
   </div>;
 }
