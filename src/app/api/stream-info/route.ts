@@ -9,7 +9,7 @@ import { sql } from "drizzle-orm";
 export const runtime = "nodejs";
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
 const clean = (value: string) => value.replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#(\d+);/g, (_, n) => Number(n) <= 0x10ffff ? String.fromCodePoint(Number(n)) : "").slice(0, 2000);
-async function boundedText(response: Response, max = 1_500_000) {
+async function boundedText(response: Response, max = 1_500_000, prefix = false) {
   if (!response.ok || !response.body) throw new Error("Unavailable");
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -19,7 +19,11 @@ async function boundedText(response: Response, max = 1_500_000) {
       const { done, value } = await reader.read();
       if (done) break;
       size += value.length;
-      if (size > max) throw new Error("Too large");
+      if (size > max) {
+        if (!prefix) throw new Error("Too large");
+        chunks.push(value.subarray(0, value.length - (size - max)));
+        break;
+      }
       chunks.push(value);
     }
   } finally { await reader.cancel(); }
@@ -44,11 +48,11 @@ export async function POST(request: Request) {
     input = JSON.parse(text).url;
   } catch { return json({ error: "Не удалось прочитать ссылку." }, 400); }
   const target = typeof input === "string" ? parseStreamLink(input) : null;
-  if (!target) return json({ error: "Вставьте ссылку на видео YouTube, канал, запись или клип Twitch, канал или запись Kick." }, 400);
+  if (!target) return json({ error: "Вставьте ссылку на канал или видео YouTube, канал, запись или клип Twitch, канал или запись Kick." }, 400);
   const result: StreamInfo = { ...target, title: null, author: null, description: null, thumbnail: null, warning: null };
   const signal = AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]);
   try {
-    if (target.platform === "youtube") {
+    if (target.platform === "youtube" && target.kind !== "channel") {
       const response = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(target.url)}`, { redirect: "error", signal, cache: "no-store" });
       const data = JSON.parse(await boundedText(response));
       const embedTitle = typeof data.html === "string" ? /\btitle="([^"]+)"/.exec(data.html)?.[1] : null;
@@ -57,7 +61,7 @@ export async function POST(request: Request) {
       result.thumbnail = `https://i.ytimg.com/vi/${target.id}/hqdefault.jpg`;
     } else {
       // Только канонический адрес из строгого парсера; переходы на другие хосты запрещены.
-      const html = await boundedText(await fetch(target.url, { redirect: "error", signal, cache: "no-store", headers: { Accept: "text/html" } }));
+      const html = await boundedText(await fetch(target.url, { redirect: "error", signal, cache: "no-store", headers: { Accept: "text/html" } }), 1_500_000, true);
       const meta = new Map<string, string>();
       for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
         const attrs = new Map([...tag.matchAll(/([\w:-]+)\s*=\s*(["'])([\s\S]*?)\2/g)].map(m => [m[1].toLowerCase(), m[3]]));
@@ -70,10 +74,10 @@ export async function POST(request: Request) {
       const thumb = meta.get("og:image");
       if (thumb) {
         const url = new URL(thumb);
-        if (url.protocol === "https:" && !url.username && !url.password && ["jtvnw.net", "ttvnw.net", "kick.com", "kickcdn.com"].some(host => url.hostname === host || url.hostname.endsWith(`.${host}`))) result.thumbnail = url.href;
+        if (url.protocol === "https:" && !url.username && !url.password && ["jtvnw.net", "ttvnw.net", "kick.com", "kickcdn.com", "ytimg.com", "ggpht.com", "googleusercontent.com"].some(host => url.hostname === host || url.hostname.endsWith(`.${host}`))) result.thumbnail = url.href;
       }
     }
   } catch { result.warning = "Не удалось получить сведения с площадки. Проверьте доступность ссылки и повторите попытку."; }
-  if (!result.warning) result.warning = target.platform === "youtube" ? "Получены публичные сведения. Статистика, длительность и состояние эфира без API недоступны." : "Получены доступные сведения страницы. Название страницы может отличаться от названия эфира. Статистика и состояние эфира без API недоступны.";
+  if (!result.warning) result.warning = target.platform === "youtube" && target.kind !== "channel" ? "Получены публичные сведения. Статистика, длительность и состояние эфира без API недоступны." : "Получены доступные сведения страницы. Название страницы может отличаться от названия эфира. Статистика и состояние эфира без API недоступны.";
   return json(result);
 }

@@ -43,8 +43,9 @@
 .pageIntro h1 { margin: 0 0 12px; font-size: var(--text-title); line-height: var(--line-heading); font-weight: var(--font-weight-bold); letter-spacing: -.02em; overflow-wrap: anywhere; }
 .shell[data-pointer="true"] .pageIntro h1:focus { outline: none; }
 .pageIntro p { margin: 0; color: var(--color-text-secondary); max-width: 65ch; line-height: var(--line-body); overflow-wrap: anywhere; }
-.panels { display: grid; align-items: stretch; }
+.panels { position: relative; display: grid; align-items: start; }
 .panel { grid-area: 1 / 1; min-width: 0; padding: 32px; border: 1px solid var(--color-line); border-radius: var(--radius-panel); background: var(--color-surface); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--dur-base) var(--ease-out), visibility 0s var(--dur-base); }
+.panel[data-visible="false"] { position: absolute; inset: 0 0 auto; width: 100%; max-height: 100%; overflow: clip; }
 .panel[data-visible="true"] { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 .panelHeading { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .panelHeading svg { color: var(--color-text-secondary); flex: 0 0 auto; }
@@ -64,7 +65,7 @@
 .secondaryButton:hover { background: var(--color-muted); }
 .primaryButton:active, .secondaryButton:active { transform: scale(.98); transition: transform var(--dur-press) var(--ease-out); }
 .primaryButton:disabled, .secondaryButton:disabled { background: var(--color-muted); color: var(--color-text-secondary); border-color: var(--color-line); cursor: default; transform: none; }
-.emptyState { min-height: 340px; display: flex; align-items: flex-start; justify-content: center; flex-direction: column; gap: 16px; max-width: 58ch; margin: 0 auto; }
+.emptyState { display: flex; align-items: flex-start; justify-content: center; flex-direction: column; gap: 16px; max-width: 58ch; margin: 0 auto; }
 .emptyState p { margin: 0 0 8px; color: var(--color-text-secondary); line-height: var(--line-body); }
 .emptyIcon { color: var(--color-text-secondary); margin-bottom: 8px; }
 .settingsForm { display: flex; flex-direction: column; gap: 24px; max-width: var(--size-form); margin-top: 24px; }
@@ -142,7 +143,7 @@
   .panel { padding: 20px 16px; }
   .profileData > div { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .profileData dd { font-size: var(--text-body); }
-  .emptyState { min-height: 360px; }
+
   .bottomNav { position: fixed; inset: auto 0 0; z-index: var(--z-sticky); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); min-height: calc(var(--size-bottom-nav) + env(safe-area-inset-bottom, 0px)); padding: 4px 8px calc(4px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--color-line); background: var(--color-surface); }
   .bottomNav > a, .moreTrigger { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 64px; padding: 8px 4px; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-text-secondary); text-decoration: none; font-size: var(--text-caption); line-height: var(--line-label); font-weight: var(--font-weight-medium); text-align: center; }
   .bottomNav > a[aria-current="page"], .moreTrigger[data-state="open"], .moreTrigger[data-active="true"] { color: var(--color-selected-text); background: var(--color-selected); }

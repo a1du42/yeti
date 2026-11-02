@@ -10,6 +10,16 @@ export function parseStreamLink(input: string): StreamTarget | null {
     const host = url.hostname.toLowerCase().replace(/^(www\.|m\.)/, "");
     const parts = url.pathname.split("/").filter(Boolean);
     if (["youtube.com", "youtu.be"].includes(host)) {
+      if (host === "youtube.com") {
+        const channel = parts[0]?.startsWith("@") ? decodeURIComponent(parts[0]) : ["channel", "c", "user"].includes(parts[0]) ? parts[1] : null;
+        const tail = parts[0]?.startsWith("@") ? parts.slice(1) : parts.slice(2);
+        if (channel && tail.every(part => ["videos", "streams", "shorts", "featured", "about", "live"].includes(part)) && tail.length <= 1) {
+          const valid = parts[0] === "channel" ? /^UC[\w-]{22}$/.test(channel) : /^@?[\p{L}\p{N}_.·-]{1,100}$/u.test(channel);
+          if (!valid) return null;
+          const path = parts[0].startsWith("@") ? encodeURIComponent(channel).replace("%40", "@") : `${parts[0]}/${encodeURIComponent(channel)}`;
+          return { platform: "youtube", id: channel, kind: "channel", url: `https://www.youtube.com/${path}` };
+        }
+      }
       const id = host === "youtu.be" ? parts[0] : parts[0] === "watch" ? url.searchParams.get("v") : ["live", "shorts", "embed"].includes(parts[0]) ? parts[1] : null;
       if (!id || !/^[\w-]{11}$/.test(id)) return null;
       return { platform: "youtube", id, kind: "video", url: `https://www.youtube.com/watch?v=${id}` };

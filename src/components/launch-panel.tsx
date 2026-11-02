@@ -18,7 +18,7 @@ export function LaunchPanel({ active }: { active: boolean }) {
   useEffect(() => { if (!active) { request.current?.abort(); request.current = null; setBusy(false); } return () => { request.current?.abort(); request.current = null; }; }, [active]);
   async function resolve(value: string) {
     request.current?.abort();
-    if (!parseStreamLink(value)) { setError("Проверьте ссылку. Поддерживаются видео YouTube, каналы, записи и клипы Twitch, каналы и записи Kick."); setBusy(false); return; }
+    if (!parseStreamLink(value)) { setError("Проверьте ссылку. Поддерживаются каналы и видео YouTube, каналы, записи и клипы Twitch, каналы и записи Kick."); setBusy(false); return; }
     const controller = new AbortController();
     request.current = controller;
     setError(""); setBusy(true); setInfo(null); setService("");
@@ -48,14 +48,14 @@ export function LaunchPanel({ active }: { active: boolean }) {
   return <div className={styles.root}>
     {!info ? <>
       <div className={styles.heading}><LinkSimple size={24} aria-hidden="true" /><h2>Что будем продвигать?</h2></div>
-      <p className={styles.muted}>Вставьте ссылку на видео или трансляцию. Сервис определится автоматически.</p>
+      <p id="launch-supported" className={styles.muted}>Поддерживаемые сервисы Twitch · YouTube · Kick</p>
       <form onSubmit={(event: FormEvent) => { event.preventDefault(); void resolve(link); }} className={styles.form} noValidate aria-busy={busy}>
         <label htmlFor="launch-link">Ссылка на видео или канал</label>
         <div className={styles.inputRow}><input id="launch-link" ref={input} type="url" inputMode="url" maxLength={2048} autoComplete="off" spellCheck={false} placeholder="https://www.youtube.com/watch?v=…" value={link} aria-invalid={!!error} aria-describedby={error ? "launch-error launch-supported" : "launch-supported"}
           onChange={event => { request.current?.abort(); request.current = null; setBusy(false); setLink(event.target.value); setError(""); }}
           onPaste={event => { const text = event.clipboardData.getData("text").trim(); if (parseStreamLink(text)) { event.preventDefault(); setLink(text); void resolve(text); } }} />
           <button className={styles.primary} type="submit" disabled={busy}>{busy ? "Получаем сведения…" : "Продолжить"}</button></div>
-        <p id="launch-supported" className={styles.muted}>Twitch · YouTube · Kick</p>
+
         {platform && <p className={styles.status}><CheckCircle size={18} aria-hidden="true" />Определён {platformNames[platform]}</p>}
         <span role="status" className="sr-only">{busy ? "Получаем сведения с площадки" : ""}</span>
         {error && <p id="launch-error" className={styles.error} role="alert"><WarningCircle size={20} aria-hidden="true" />{error}</p>}
