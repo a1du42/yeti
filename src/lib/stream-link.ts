@@ -1,7 +1,8 @@
 export type Platform = "twitch" | "youtube" | "kick";
-export type StreamTarget = { platform: Platform; id: string; kind: "video" | "channel" | "clip"; url: string };
-export type StreamInfo = StreamTarget & { title: string | null; author: string | null; description: string | null; thumbnail: string | null; warning: string | null };
+export type StreamTarget = { platform: Platform; id: string; kind: "video" | "channel" | "clip" | "stream"; url: string };
+export type StreamInfo = StreamTarget & { sourceKind: StreamTarget["kind"]; title: string | null; author: string | null; description: string | null; thumbnail: string | null; warning: string | null };
 export const platformNames: Record<Platform, string> = { twitch: "Twitch", youtube: "YouTube", kick: "Kick" };
+export const streamTypeNames: Record<StreamTarget["kind"], string> = { video: "Видео", channel: "Канал", clip: "Видео", stream: "Трансляция" };
 
 export function parseStreamLink(input: string): StreamTarget | null {
   try {

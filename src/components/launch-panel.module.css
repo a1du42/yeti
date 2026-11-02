@@ -36,11 +36,41 @@
 .error { color: var(--color-danger); }
 .services { display: grid; gap: 16px; border-top: 1px solid var(--color-line); padding-top: 24px; }
 .help { display: grid; place-items: center; width: 44px; min-height: 44px; padding: 0; border: 0; color: var(--color-text-secondary); background: transparent; border-radius: var(--radius-control); }
-.services fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 12px; }
-.service { display: flex; gap: 12px; align-items: flex-start; padding: 20px; min-height: 44px; border: 1px solid var(--color-control-border); border-radius: var(--radius-control); cursor: pointer; }
-.service[data-selected="true"] { border-color: var(--color-selected-text); background: var(--color-selected); }
-.service input { width: 20px; height: 20px; margin: 0; accent-color: var(--color-action); flex-shrink: 0; }
-.service > span { display: grid; gap: 8px; min-width: 0; }
+.serviceList { display: grid; gap: 12px; }
+.service { position: relative; display: flex; align-items: center; gap: 16px; width: 100%; min-height: 44px; padding: 20px 48px 20px 20px; border: 1px solid var(--color-control-border); border-radius: var(--radius-control); color: var(--color-text); background: var(--color-surface); text-align: left; }
+.service:hover { background: var(--color-muted); }
+.service[aria-pressed="true"] { border-color: var(--color-selected-text); background: var(--color-selected); }
+.service > svg { flex-shrink: 0; }
+.serviceCopy { display: grid; gap: 8px; flex: 1; min-width: 0; }
 .service strong { font-size: var(--text-body); font-weight: var(--font-weight-medium); }
-.service span span { font-size: var(--text-small); color: var(--color-text-secondary); line-height: var(--line-body); }
-@media (max-width: 767px) { .inputRow { flex-direction: column; } .summary { grid-template-columns: minmax(0, 1fr); gap: 16px; } .service { padding: 16px; } }
+.serviceCopy > span, .rate > span { font-size: var(--text-small); color: var(--color-text-secondary); line-height: var(--line-body); }
+.rate { display: grid; gap: 4px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.rate > strong { white-space: nowrap; }
+.choiceCheck { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--color-selected-text); }
+.configuration { display: grid; gap: 24px; padding: 24px; border: 1px solid var(--color-line); border-radius: var(--radius-panel); }
+.serviceDescription { display: grid; gap: 12px; }
+.serviceDescription h3 { font-size: var(--text-section); font-weight: var(--font-weight-semibold); }
+.serviceDescription p { color: var(--color-text-secondary); line-height: var(--line-body); }
+.calculation { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.quantityField { display: grid; gap: 8px; }
+.quantityField label { font-size: var(--text-small); font-weight: var(--font-weight-medium); }
+.quantityField input { width: 100%; min-width: 0; min-height: 44px; padding: 12px; border: 1px solid var(--color-control-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font: inherit; }
+.quantityField input[aria-invalid="true"] { border-color: var(--color-danger); }
+.total { display: grid; gap: 16px; margin: 0; font-size: var(--text-small); }
+.total > div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.total dt { color: var(--color-text-secondary); }
+.total dd { margin: 0; white-space: nowrap; font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; }
+.totalAmount { border-top: 1px solid var(--color-line); padding-top: 16px; }
+.totalAmount dt, .totalAmount dd { font-size: var(--text-section); font-weight: var(--font-weight-semibold); color: var(--color-text); }
+@media (max-width: 767px) {
+  .inputRow { flex-direction: column; }
+  .summary, .calculation { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .service { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding: 16px 44px 16px 16px; }
+  .rate { grid-column: 2; justify-self: start; text-align: left; }
+  .configuration { padding: 16px; }
+}
+.parameters { display: grid; gap: 24px; min-width: 0; }
+.rangeHeading, .rangeLimits { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rangeValue { font-size: var(--text-body); font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; }
+.quantityField .hoursRange { display: block; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; accent-color: var(--color-action); cursor: pointer; }
+.rangeLimits { color: var(--color-text-secondary); font-size: var(--text-small); }

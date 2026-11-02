@@ -9,6 +9,39 @@ import { sql } from "drizzle-orm";
 export const runtime = "nodejs";
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
 const clean = (value: string) => value.replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#(\d+);/g, (_, n) => Number(n) <= 0x10ffff ? String.fromCodePoint(Number(n)) : "").slice(0, 2000);
+function hasLiveBroadcast(html: string) {
+  const now = Date.now();
+  function visit(value: unknown): boolean {
+    if (!value || typeof value !== "object") return false;
+    if (Array.isArray(value)) return value.some(visit);
+    const node = value as Record<string, unknown>;
+    if (node["@type"] === "VideoObject") {
+      const publications = Array.isArray(node.publication) ? node.publication : [node.publication];
+      return publications.some(event => {
+        if (!event || typeof event !== "object") return false;
+        const start = Date.parse(event.startDate);
+        const end = event.endDate ? Date.parse(event.endDate) : Infinity;
+        return event["@type"] === "BroadcastEvent" && event.isLiveBroadcast === true && Number.isFinite(start) && start <= now && end > now;
+      });
+    }
+    return Array.isArray(node["@graph"]) && node["@graph"].some(visit);
+  }
+  for (const match of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try { if (visit(JSON.parse(match[1]))) return true; } catch { /* Неполные метаданные не подтверждают эфир. */ }
+  }
+  for (const match of html.matchAll(/<span\b[^>]*itemtype=["']https?:\/\/schema.org\/BroadcastEvent["'][^>]*>([\s\S]*?)<\/span>/gi)) {
+    const properties: Record<string, string> = {};
+    for (const meta of match[1].matchAll(/<meta\b[^>]*>/gi)) {
+      const attrs = new Map([...meta[0].matchAll(/([\w:-]+)\s*=\s*(["'])(.*?)\2/g)].map(m => [m[1].toLowerCase(), m[3]]));
+      const name = attrs.get("itemprop");
+      if (name && attrs.has("content")) properties[name] = attrs.get("content")!;
+    }
+    const start = Date.parse(properties.startDate);
+    const end = properties.endDate ? Date.parse(properties.endDate) : Infinity;
+    if (properties.isLiveBroadcast?.toLowerCase() === "true" && Number.isFinite(start) && start <= now && end > now) return true;
+  }
+  return false;
+}
 async function boundedText(response: Response, max = 1_500_000, prefix = false) {
   if (!response.ok || !response.body) throw new Error("Unavailable");
   const reader = response.body.getReader();
@@ -49,12 +82,17 @@ export async function POST(request: Request) {
   } catch { return json({ error: "Не удалось прочитать ссылку." }, 400); }
   const target = typeof input === "string" ? parseStreamLink(input) : null;
   if (!target) return json({ error: "Вставьте ссылку на канал или видео YouTube, канал, запись или клип Twitch, канал или запись Kick." }, 400);
-  const result: StreamInfo = { ...target, title: null, author: null, description: null, thumbnail: null, warning: null };
+  const result: StreamInfo = { ...target, sourceKind: target.kind, title: null, author: null, description: null, thumbnail: null, warning: null };
   const signal = AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]);
   try {
     if (target.platform === "youtube" && target.kind !== "channel") {
-      const response = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(target.url)}`, { redirect: "error", signal, cache: "no-store" });
-      const data = JSON.parse(await boundedText(response));
+      const [embed, page] = await Promise.allSettled([
+        fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(target.url)}`, { redirect: "error", signal, cache: "no-store" }).then(response => boundedText(response)).then(text => JSON.parse(text)),
+        fetch(target.url, { redirect: "error", signal, cache: "no-store" }).then(response => boundedText(response, 1_500_000, true)),
+      ]);
+      if (page.status === "fulfilled" && hasLiveBroadcast(page.value)) result.kind = "stream";
+      if (embed.status === "rejected") throw new Error("Unavailable");
+      const data = embed.value;
       const embedTitle = typeof data.html === "string" ? /\btitle="([^"]+)"/.exec(data.html)?.[1] : null;
       result.title = typeof data.title === "string" ? data.title.slice(0, 500) : embedTitle ? clean(embedTitle).slice(0, 500) : null;
       result.author = typeof data.author_name === "string" ? data.author_name.slice(0, 200) : null;
@@ -62,6 +100,7 @@ export async function POST(request: Request) {
     } else {
       // Только канонический адрес из строгого парсера; переходы на другие хосты запрещены.
       const html = await boundedText(await fetch(target.url, { redirect: "error", signal, cache: "no-store", headers: { Accept: "text/html" } }), 1_500_000, true);
+      if (hasLiveBroadcast(html)) result.kind = "stream";
       const meta = new Map<string, string>();
       for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
         const attrs = new Map([...tag.matchAll(/([\w:-]+)\s*=\s*(["'])([\s\S]*?)\2/g)].map(m => [m[1].toLowerCase(), m[3]]));
@@ -78,6 +117,5 @@ export async function POST(request: Request) {
       }
     }
   } catch { result.warning = "Не удалось получить сведения с площадки. Проверьте доступность ссылки и повторите попытку."; }
-  if (!result.warning) result.warning = target.platform === "youtube" && target.kind !== "channel" ? "Получены публичные сведения. Статистика, длительность и состояние эфира без API недоступны." : "Получены доступные сведения страницы. Название страницы может отличаться от названия эфира. Статистика и состояние эфира без API недоступны.";
   return json(result);
 }
