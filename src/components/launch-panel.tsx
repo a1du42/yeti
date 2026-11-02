@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowSquareOut, LinkSimple, Play, WarningCircle, CheckCircle, VideoCamera, Question } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowSquareOut, CircleNotch, LinkSimple, Play, WarningCircle, CheckCircle, VideoCamera, Question } from "@phosphor-icons/react";
 import { parseStreamLink, platformNames, type StreamInfo } from "@/lib/stream-link";
 import { IconTooltip } from "@/components/ui";
 import styles from "./launch-panel.module.css";
@@ -54,7 +54,7 @@ export function LaunchPanel({ active }: { active: boolean }) {
         <div className={styles.inputRow}><input id="launch-link" ref={input} type="url" inputMode="url" maxLength={2048} autoComplete="off" spellCheck={false} placeholder="https://www.youtube.com/watch?v=…" value={link} aria-invalid={!!error} aria-describedby={error ? "launch-error launch-supported" : "launch-supported"}
           onChange={event => { request.current?.abort(); request.current = null; setBusy(false); setLink(event.target.value); setError(""); }}
           onPaste={event => { const text = event.clipboardData.getData("text").trim(); if (parseStreamLink(text)) { event.preventDefault(); setLink(text); void resolve(text); } }} />
-          <button className={styles.primary} type="submit" disabled={busy}>{busy ? "Получаем сведения…" : "Продолжить"}</button></div>
+          <button className={styles.primary} type="submit" disabled={busy} aria-busy={busy} aria-label="Продолжить"><span className={styles.buttonLabel} aria-hidden={busy}>Продолжить</span>{busy && <CircleNotch className={styles.spinner} size={20} weight="regular" aria-hidden="true" />}</button></div>
 
         {platform && <p className={styles.status}><CheckCircle size={18} aria-hidden="true" />Определён {platformNames[platform]}</p>}
         <span role="status" className="sr-only">{busy ? "Получаем сведения с площадки" : ""}</span>

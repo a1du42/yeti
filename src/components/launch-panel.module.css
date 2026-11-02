@@ -9,6 +9,12 @@
 .primary { min-height: 44px; padding: 12px 20px; border: 1px solid var(--color-action-border); border-radius: var(--radius-control); color: var(--color-action-text); background: var(--color-action); font-weight: var(--font-weight-medium); }
 .primary:hover { background: var(--color-action-hover); }
 .primary:disabled { background: var(--color-muted); color: var(--color-text-secondary); border-color: var(--color-line); cursor: wait; }
+.primary { display: grid; place-items: center; }
+.buttonLabel, .spinner { grid-area: 1 / 1; }
+.primary[aria-busy="true"] .buttonLabel { visibility: hidden; }
+.spinner { animation: service-spin var(--dur-max) linear infinite; }
+@keyframes service-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
 .back, .source { display: inline-flex; align-items: center; gap: 8px; width: fit-content; min-height: 44px; color: var(--color-link); font-size: var(--text-small); background: transparent; border: 0; padding: 8px 0; }
 .back:hover, .source:hover { text-decoration: underline; }
 .summary { display: grid; grid-template-columns: minmax(160px, 280px) minmax(0, 1fr); gap: 24px; align-items: start; }
