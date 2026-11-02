@@ -8,13 +8,14 @@ import * as Popover from "@radix-ui/react-popover";
 import * as Tabs from "@radix-ui/react-tabs";
 import {
   ArrowLeft, CaretUpDown, CheckCircle, Flask, Gear,
-  List, Plus, SignOut, SquaresFour, UserCircle, Wallet, WarningCircle, X,
+  List, Plus, SignOut, RocketLaunch, Wallet, WarningCircle, X,
 } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { nameError as validateName } from "@/lib/validation";
 import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/timezones";
 import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
+import { LaunchPanel } from "@/components/launch-panel";
 import { PaymentPanel } from "@/components/payment-panel";
 import { TEMPORARY_BALANCE_LABEL } from "@/components/balance-display";
 import styles from "./workspace.module.css";
@@ -31,7 +32,7 @@ export type CurrentUser = {
 type View = "one" | "two" | "settings" | "payment";
 const views: View[] = ["one", "two", "settings", "payment"];
 const labels: Record<View, string> = {
-  one: "Тестовая 1", two: "Тестовая 2", settings: "Настройки", payment: "Оплата",
+  one: "Запустить", two: "Тестовая 2", settings: "Настройки", payment: "Оплата",
 };
 function readView(value: string | null): View {
   return views.includes(value as View) ? value as View : "one";
@@ -216,7 +217,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
   const navigation = (onNavigate?: () => void) => (
     <nav className={styles.sectionNav} aria-label="Разделы приложения">
       {(["one", "two"] as const).map((item) => {
-        const Icon = item === "one" ? SquaresFour : Flask;
+        const Icon = item === "one" ? RocketLaunch : Flask;
         return <Link href={`/app?tab=${item}`} key={item} className={styles.navLink}
           aria-current={view === item ? "page" : undefined}
           onClick={(event) => { handleLink(event, item); onNavigate?.(); }}>
@@ -327,7 +328,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
       </div>
       <div className={styles.headerActions}>
         <div className={styles.headerBalance}>
-          <div className={styles.balanceText}><span>Баланс</span><strong>{TEMPORARY_BALANCE_LABEL}</strong></div>
+          <div className={styles.balanceText} aria-label={`Баланс: ${TEMPORARY_BALANCE_LABEL}`}><Wallet size={20} weight="regular" aria-hidden="true" /><strong>{TEMPORARY_BALANCE_LABEL}</strong></div>
           <IconTooltip label="Пополнить баланс">
             <Link href="/app?tab=payment" className={styles.topUpLink} aria-label="Пополнить баланс" onClick={(event) => handleLink(event, "payment")}>
               <Plus size={20} weight="regular" aria-hidden="true" />
@@ -352,21 +353,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
         </Tabs.List>}
         <div className={styles.panels}>
           <section className={styles.panel} aria-label={labels.one} data-visible={view === "one"} inert={view !== "one"} aria-hidden={view !== "one"}>
-            <div className={styles.panelHeading}><UserCircle size={26} weight="regular" aria-hidden="true" /><h2>Ваш профиль</h2></div>
-            <p className={styles.muted}>Сведения аккаунта, с которым выполнен вход.</p>
-            <dl className={styles.profileData}>
-              <div><dt>Имя</dt><dd>{profile.name}</dd></div>
-              <div><dt>Электронная почта</dt><dd>{profile.email}</dd></div>
-              <div><dt>Подтверждение почты</dt><dd><span className={profile.emailVerified ? styles.successStatus : styles.neutralStatus}>
-                {profile.emailVerified ? <CheckCircle size={18} weight="regular" aria-hidden="true" /> : <WarningCircle size={18} weight="regular" aria-hidden="true" />}
-                {profile.emailVerified ? "Адрес подтверждён" : "Адрес не подтверждён"}
-              </span></dd></div>
-              <div><dt>Часовой пояс</dt><dd>{localeReady ? timezoneLabel(profile.timezone) : "Уточняем название часового пояса…"}</dd></div>
-              <div><dt>Аккаунт создан</dt><dd>{localeReady ? formatCreatedAt(profile.createdAt, profile.timezone) : "Загружаем дату…"}</dd></div>
-            </dl>
-            <Link href="/app?tab=settings" className={styles.secondaryButton} onClick={(event) => handleLink(event, "settings")}>
-              <Gear size={20} weight="regular" aria-hidden="true" />Открыть настройки
-            </Link>
+            <LaunchPanel active={view === "one"} />
           </section>
           <section className={styles.panel} aria-label={labels.two} data-visible={view === "two"} inert={view !== "two"} aria-hidden={view !== "two"}>
             <div className={styles.emptyState}>
@@ -374,7 +361,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
               <h2>Второй тестовый раздел</h2>
               <p>Здесь пока нет данных. Раздел помогает проверить навигацию, оформление и работу кабинета на разных экранах.</p>
               <Link href="/app?tab=one" className={styles.secondaryButton} onClick={(event) => handleLink(event, "one")}>
-                <ArrowLeft size={20} weight="regular" aria-hidden="true" />К профилю
+                <ArrowLeft size={20} weight="regular" aria-hidden="true" />К запуску
               </Link>
             </div>
           </section>
@@ -432,7 +419,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
 
     <nav className={styles.bottomNav} aria-label="Основные разделы">
       <Link href="/app?tab=one" aria-current={view === "one" ? "page" : undefined} onClick={(event) => handleLink(event, "one")}>
-        <SquaresFour size={22} weight="regular" aria-hidden="true" /><span>Тестовая 1</span>
+        <RocketLaunch size={22} weight="regular" aria-hidden="true" /><span>Запустить</span>
       </Link>
       <Link href="/app?tab=two" aria-current={view === "two" ? "page" : undefined} onClick={(event) => handleLink(event, "two")}>
         <Flask size={22} weight="regular" aria-hidden="true" /><span>Тестовая 2</span>

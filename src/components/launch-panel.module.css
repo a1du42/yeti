@@ -1,0 +1,40 @@
+.root { display: grid; gap: 24px; min-width: 0; }
+.heading { display: flex; align-items: center; gap: 12px; }
+.muted { margin: 0; color: var(--color-text-secondary); font-size: var(--text-small); line-height: var(--line-body); }
+.form { display: grid; gap: 12px; max-width: 800px; }
+.form label { font-size: var(--text-small); font-weight: var(--font-weight-medium); }
+.inputRow { display: flex; align-items: stretch; gap: 12px; }
+.inputRow input { flex: 1; min-width: 0; min-height: 44px; border: 1px solid var(--color-control-border); border-radius: var(--radius-control); padding: 12px; color: var(--color-text); background: var(--color-surface); font: inherit; }
+.inputRow input[aria-invalid="true"] { border-color: var(--color-danger); }
+.primary { min-height: 44px; padding: 12px 20px; border: 1px solid var(--color-action-border); border-radius: var(--radius-control); color: var(--color-action-text); background: var(--color-action); font-weight: var(--font-weight-medium); }
+.primary:hover { background: var(--color-action-hover); }
+.primary:disabled { background: var(--color-muted); color: var(--color-text-secondary); border-color: var(--color-line); cursor: wait; }
+.back, .source { display: inline-flex; align-items: center; gap: 8px; width: fit-content; min-height: 44px; color: var(--color-link); font-size: var(--text-small); background: transparent; border: 0; padding: 8px 0; }
+.back:hover, .source:hover { text-decoration: underline; }
+.summary { display: grid; grid-template-columns: minmax(160px, 280px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.thumbnail, .placeholder { width: 100%; aspect-ratio: 16/9; border-radius: var(--radius-control); object-fit: cover; background: var(--color-muted); }
+.placeholder { display: grid; place-items: center; color: var(--color-text-secondary); }
+.details { min-width: 0; }
+.platform { display: block; color: var(--color-text-secondary); font-size: var(--text-small); margin-bottom: 8px; }
+.details h2, .details dd { overflow-wrap: anywhere; }
+.details dl { display: grid; gap: 12px; margin: 20px 0 8px; font-size: var(--text-small); }
+.details dl > div { display: grid; gap: 4px; }
+.details dt { color: var(--color-text-secondary); }
+.details dd { margin: 0; }
+.description { grid-column: 1 / -1; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--color-text-secondary); line-height: var(--line-body); font-size: var(--text-small); }
+.notice, .selection, .status, .error { display: flex; align-items: flex-start; gap: 8px; font-size: var(--text-small); line-height: var(--line-body); }
+.notice, .selection { padding: 16px; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-muted); }
+.notice { flex-wrap: wrap; }
+.notice p { flex: 1; min-width: 140px; }
+.notice svg, .selection svg, .error svg { flex-shrink: 0; margin-top: 2px; }
+.error { color: var(--color-danger); }
+.services { display: grid; gap: 16px; border-top: 1px solid var(--color-line); padding-top: 24px; }
+.help { display: grid; place-items: center; width: 44px; min-height: 44px; padding: 0; border: 0; color: var(--color-text-secondary); background: transparent; border-radius: var(--radius-control); }
+.services fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 12px; }
+.service { display: flex; gap: 12px; align-items: flex-start; padding: 20px; min-height: 44px; border: 1px solid var(--color-control-border); border-radius: var(--radius-control); cursor: pointer; }
+.service[data-selected="true"] { border-color: var(--color-selected-text); background: var(--color-selected); }
+.service input { width: 20px; height: 20px; margin: 0; accent-color: var(--color-action); flex-shrink: 0; }
+.service > span { display: grid; gap: 8px; min-width: 0; }
+.service strong { font-size: var(--text-body); font-weight: var(--font-weight-medium); }
+.service span span { font-size: var(--text-small); color: var(--color-text-secondary); line-height: var(--line-body); }
+@media (max-width: 767px) { .inputRow { flex-direction: column; } .summary { grid-template-columns: minmax(0, 1fr); gap: 16px; } .service { padding: 16px; } }
