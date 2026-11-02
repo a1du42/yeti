@@ -8,7 +8,7 @@ import * as Popover from "@radix-ui/react-popover";
 import * as Tabs from "@radix-ui/react-tabs";
 import {
   ArrowLeft, CaretUpDown, CheckCircle, Flask, Gear,
-  List, SignOut, SquaresFour, UserCircle, Wallet, WarningCircle, X,
+  List, Plus, SignOut, SquaresFour, UserCircle, Wallet, WarningCircle, X,
 } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { nameError as validateName } from "@/lib/validation";
@@ -16,6 +16,7 @@ import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/time
 import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
 import { PaymentPanel } from "@/components/payment-panel";
+import { TEMPORARY_BALANCE_LABEL } from "@/components/balance-display";
 import styles from "./workspace.module.css";
 
 export type CurrentUser = {
@@ -321,10 +322,20 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
-        <Link href="/app" className={styles.mobileLogo} aria-label="YETI STREAM — личный кабинет"><Logo /></Link>
+        <Link href="/app" className={styles.mobileLogo} aria-label="YETI STREAM — личный кабинет"><span className={styles.fullLogo}><Logo /></span><span className={styles.compactLogo}><Logo mark /></span></Link>
         <span className={styles.headerCaption}>Личный кабинет</span>
       </div>
-      <div className={styles.headerAccount}>{accountMenu("header")}</div>
+      <div className={styles.headerActions}>
+        <div className={styles.headerBalance}>
+          <div className={styles.balanceText}><span>Баланс</span><strong>{TEMPORARY_BALANCE_LABEL}</strong></div>
+          <IconTooltip label="Пополнить баланс">
+            <Link href="/app?tab=payment" className={styles.topUpLink} aria-label="Пополнить баланс" onClick={(event) => handleLink(event, "payment")}>
+              <Plus size={20} weight="regular" aria-hidden="true" />
+            </Link>
+          </IconTooltip>
+        </div>
+        <div className={styles.headerAccount}>{accountMenu("header")}</div>
+      </div>
     </header>
 
     <main className={styles.main} id="workspace-main" tabIndex={-1}>

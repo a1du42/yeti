@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { ArrowSquareOut, CheckCircle, Clock, Receipt, Wallet, WarningCircle, Question } from "@phosphor-icons/react";
 import { formatUsd, MAX_TOPUP_CENTS, MIN_TOPUP_CENTS, usdCents } from "@/lib/money";
 import { IconTooltip } from "@/components/ui";
+import { TEMPORARY_BALANCE_LABEL } from "@/components/balance-display";
 import styles from "./payment-panel.module.css";
 
 type Operation = { id: string; amountCents: number; creditCents: number; status: string; createdAt: string; creditedAt: string | null; checkoutUrl: string | null };
@@ -130,8 +131,8 @@ export function PaymentPanel({ active, onNotify }: { active: boolean; onNotify: 
     <div className={styles.layout}>
       <section className={styles.balance} aria-labelledby="payment-balance">
         <div className={styles.balanceHeading}><h2 id="payment-balance">Баланс</h2><Wallet size={24} weight="regular" aria-hidden="true" /></div>
-        <p className={styles.balanceValue}>{data ? formatUsd(data.balanceCents) : "—"}</p>
-        <p className={styles.small}>{data ? "Подтверждённые зачисления в USD" : loading ? "Загружаем баланс…" : "Баланс пока не получен"}</p>
+        <p className={styles.balanceValue}>{TEMPORARY_BALANCE_LABEL}</p>
+        <p className={styles.small}>Временное значение для отображения</p>
         {updated && <p className={styles.small}>Обновлено в {updated}</p>}
       </section>
       <form className={styles.form} onSubmit={submit} noValidate aria-labelledby="payment-topup">

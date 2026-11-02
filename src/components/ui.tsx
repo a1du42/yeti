@@ -10,11 +10,11 @@ export function focusPopupOnOpen(event: Event) {
   if (event.target instanceof HTMLElement) event.target.focus({ preventScroll: true });
 }
 
-export function Logo() {
-  return <span className={styles.logo} role="img" aria-label="YETI STREAM">
+export function Logo({ mark = false }: { mark?: boolean }) {
+  return <span className={`${styles.logo} ${mark ? styles.logoMark : ""}`} role="img" aria-label="YETI STREAM">
     {/* Готовые SVG содержат надпись в кривых. */}
-    <img className={styles.light} src="/assets/logo.svg" width="180" height="76" alt="" />
-    <img className={styles.dark} src="/assets/logo-dark.svg" width="180" height="76" alt="" />
+    <img className={styles.light} src={mark ? "/assets/logo-mark.svg" : "/assets/logo.svg"} width={mark ? 48 : 180} height={mark ? 48 : 76} alt="" />
+    <img className={styles.dark} src={mark ? "/assets/logo-mark-dark.svg" : "/assets/logo-dark.svg"} width={mark ? 48 : 180} height={mark ? 48 : 76} alt="" />
   </span>;
 }
 
