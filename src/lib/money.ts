@@ -1,5 +1,7 @@
 // Все суммы приложения хранятся в центах USD; десятичные строки не проходят через float.
 export const CURRENCY = "USD";
+export const MIN_TOPUP_CENTS = 100;
+export const MAX_TOPUP_CENTS = 1_000_000;
 export const formatUsd = (cents: number) => new Intl.NumberFormat("ru-RU", {
   style: "currency", currency: CURRENCY, currencyDisplay: "code",
 }).format(cents / 100);

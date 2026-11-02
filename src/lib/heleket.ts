@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { getServerEnv } from "./env";
-import { usdCents } from "./money";
+import { MAX_TOPUP_CENTS, usdCents } from "./money";
 
 export class HeleketInactiveError extends Error {
   constructor() { super("heleket_api_inactive"); }
@@ -11,7 +11,8 @@ export class HeleketInactiveError extends Error {
 export function paymentSettings() {
   const env = getServerEnv();
   const min = usdCents(env.HELEKET_MIN_USD ?? "");
-  const max = usdCents(env.HELEKET_MAX_USD ?? "");
+  const configuredMax = usdCents(env.HELEKET_MAX_USD ?? "");
+  const max = configuredMax === null ? null : Math.min(configuredMax, MAX_TOPUP_CENTS);
   const policyReady = min !== null && max !== null && min > 0 && max >= min && max <= 100_000_000
     && Boolean(env.HELEKET_FEE_PAYER);
   return {

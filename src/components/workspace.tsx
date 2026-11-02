@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -65,6 +65,11 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
   const [logoutError, setLogoutError] = useState("");
   const [pending, setPending] = useState<"save" | "logout" | null>(null);
   const [toast, setToast] = useState("");
+  const [toastWarning, setToastWarning] = useState(false);
+  const notifyPayment = useCallback((message: string, tone: "success" | "warning" = "success") => {
+    setToast(message);
+    setToastWarning(tone === "warning");
+  }, []);
   const [zones, setZones] = useState<ReturnType<typeof getTimezoneOptions>>([]);
   const [localeReady, setLocaleReady] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -188,6 +193,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
       }
       setProfile((previous) => ({ ...previous, name: cleanName, timezone }));
       setName(cleanName);
+      setToastWarning(false);
       setToast("Изменения сохранены");
       router.refresh();
     } catch {
@@ -408,7 +414,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
             </section>
           </Tabs.Content>
           <Tabs.Content className={styles.panel} value="payment" forceMount data-visible={view === "payment"} inert={view !== "payment"} aria-hidden={view !== "payment"}>
-            <PaymentPanel active={view === "payment"} onConfirmed={setToast} />
+            <PaymentPanel active={view === "payment"} onNotify={notifyPayment} />
           </Tabs.Content>
         </div>
       </Tabs.Root>
@@ -425,8 +431,8 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
     </nav>
 
     <div className={styles.toastRegion} role="status" aria-live="polite" aria-atomic="true">
-      {toast && <div className={styles.toast}>
-        <CheckCircle size={22} weight="regular" aria-hidden="true" /><span>{toast}</span>
+      {toast && <div className={styles.toast} data-tone={toastWarning ? "warning" : "success"}>
+        {toastWarning ? <WarningCircle size={22} weight="regular" aria-hidden="true" /> : <CheckCircle size={22} weight="regular" aria-hidden="true" />}<span>{toast}</span>
         <IconTooltip label="Закрыть уведомление"><button className={styles.iconButton} aria-label="Закрыть уведомление" onClick={() => setToast("")}><X size={20} weight="regular" aria-hidden="true" /></button></IconTooltip>
       </div>}
     </div>

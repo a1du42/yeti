@@ -22,7 +22,7 @@ Google подключён через Better Auth при наличии обои�
 
 ## Структура
 
-`/app?tab=payment` показывает `PaymentPanel`: серверные баланс и историю, создание счёта Heleket, переход на оплату и ручное обновление статуса. API: `/api/payments`, `/api/payments/[id]`, `/api/payments/heleket/webhook`. Таблицы `payment` и `payment_credit`; миграция `0001_worried_nuke.sql`. Серверная сессия обязательна для каждого пользовательского запроса, POST дополнительно проверяет Origin. [Настройка Heleket](payments.md).
+`/app?tab=payment` показывает `PaymentPanel`: серверные баланс и историю, создание счёта Heleket, переход на оплату и получение подтверждённых статусов. API: `/api/payments`, `/api/payments/[id]`, `/api/payments/heleket/webhook`. Таблицы `payment` и `payment_credit`; миграция `0001_worried_nuke.sql`. Серверная сессия обязательна для каждого пользовательского запроса, POST дополнительно проверяет Origin. [Настройка Heleket](payments.md).
 
 - `src/app` — маршруты и layouts App Router; `/app/auth` публичен, рабочие экраны `/app` проверяют сессию на сервере.
 - `src/components` — общие UI-компоненты и оболочка; CSS Modules находятся рядом с компонентами.

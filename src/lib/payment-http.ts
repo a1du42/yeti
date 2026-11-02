@@ -59,5 +59,5 @@ export function paymentFailure(error: unknown) {
     return paymentResponse({ error: "Оплата пока недоступна. Попробуйте позже." }, 503);
   }
   console.error("payment_request_failed");
-  return paymentResponse({ error: "Не удалось подтвердить результат. Обновите статус счёта или повторите тот же запрос." }, 503);
+  return paymentResponse({ error: "Не удалось подтвердить результат. Обновите страницу или повторите тот же запрос." }, 503);
 }

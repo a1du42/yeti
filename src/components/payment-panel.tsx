@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowClockwise, ArrowSquareOut, CheckCircle, Clock, Receipt, Wallet, WarningCircle } from "@phosphor-icons/react";
-import { formatUsd, usdCents } from "@/lib/money";
+import { ArrowSquareOut, CheckCircle, Clock, Receipt, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { formatUsd, MAX_TOPUP_CENTS, MIN_TOPUP_CENTS, usdCents } from "@/lib/money";
 import styles from "./payment-panel.module.css";
 
 type Operation = { id: string; amountCents: number; creditCents: number; status: string; createdAt: string; creditedAt: string | null; checkoutUrl: string | null };
@@ -19,11 +19,12 @@ function Status({ value }: { value: string }) {
   return <span className={styles.status} data-state={Icon === CheckCircle ? "success" : "pending"}><Icon size={18} weight="regular" aria-hidden="true" />{statuses[value] ?? "Требует проверки"}</span>;
 }
 
-export function PaymentPanel({ active, onConfirmed }: { active: boolean; onConfirmed: (message: string) => void }) {
+export function PaymentPanel({ active, onNotify }: { active: boolean; onNotify: (message: string, tone?: "success" | "warning") => void }) {
   const [data, setData] = useState<Overview | null>(null);
   const [amount, setAmount] = useState("10");
   const [fieldError, setFieldError] = useState("");
-  const [error, setError] = useState("");
+  const [provider, setProvider] = useState("");
+  const [providerError, setProviderError] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [updated, setUpdated] = useState("");
@@ -32,6 +33,12 @@ export function PaymentPanel({ active, onConfirmed }: { active: boolean; onConfi
   const pending = useRef(false);
   const key = useRef<{ amount: string; value: string } | null>(null);
   const lastBalance = useRef<number | null>(null);
+  const hasData = useRef(false);
+  const providerInput = useRef<HTMLInputElement>(null);
+
+  const notifyError = useCallback((message: string) => {
+    onNotify(`${message}${hasData.current ? " Последние полученные данные сохранены ниже." : ""}`, "warning");
+  }, [onNotify]);
 
   const run = useCallback(async (path: string, body?: object) => {
     request.current?.abort();
@@ -53,27 +60,33 @@ export function PaymentPanel({ active, onConfirmed }: { active: boolean; onConfi
   const load = useCallback(async () => {
     const result: Overview = await run("/api/payments");
     setData(result);
+    hasData.current = true;
     setUpdated(new Intl.DateTimeFormat("ru", { timeStyle: "short" }).format(new Date()));
-    if (lastBalance.current !== null && result.balanceCents > lastBalance.current) onConfirmed(`Зачислено ${formatUsd(result.balanceCents - lastBalance.current)}.`);
+    const credited = lastBalance.current !== null && result.balanceCents > lastBalance.current;
+    if (credited) onNotify(`Зачислено ${formatUsd(result.balanceCents - lastBalance.current!)}.`);
+    if (!result.settings.enabled) {
+      setProvider("");
+      setProviderError("");
+      if (!credited) onNotify("Приём платежей пока недоступен.", "warning");
+    }
     lastBalance.current = result.balanceCents;
-  }, [run, onConfirmed]);
+  }, [run, onNotify]);
 
   useEffect(() => {
     if (!active) return;
     let mounted = true;
     setLoading(true);
-    setError("");
-    load().catch(() => { if (mounted) setError("Не удалось загрузить оплату. Повторите обновление."); })
+    load().catch(() => { if (mounted) notifyError("Не удалось загрузить оплату. Обновите страницу."); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; request.current?.abort(); };
-  }, [active, load]);
+  }, [active, load, notifyError]);
 
-  const min = data?.settings.minCents ?? 100;
-  const max = data?.settings.maxCents ?? 100_000;
+  const min = data?.settings.minCents ?? MIN_TOPUP_CENTS;
+  const max = data?.settings.maxCents ?? MAX_TOPUP_CENTS;
   function validateAmount(value: string) {
     const cents = usdCents(value);
     return cents === null || cents < min || cents > max
-      ? "Введите сумму от 1 до 1000 USD с точностью до цента." : "";
+      ? `Введите сумму от ${formatUsd(min)} до ${formatUsd(max)} с точностью до цента.` : "";
   }
   function updateAmount(value: string) {
     const number = Number(value);
@@ -92,35 +105,27 @@ export function PaymentPanel({ active, onConfirmed }: { active: boolean; onConfi
       input.current?.focus();
       return;
     }
+    if (!data?.settings.enabled) { onNotify("Приём платежей пока недоступен.", "warning"); return; }
+    if (provider !== "heleket") {
+      setProviderError("Выберите сервис для оплаты.");
+      providerInput.current?.focus();
+      return;
+    }
     pending.current = true;
     setBusy(true);
-    setError("");
+    onNotify("");
     // Ключ сохраняется при timeout. Повтор той же суммы продолжает тот же счёт.
     if (key.current?.amount !== amount) key.current = { amount, value: crypto.randomUUID() };
     try {
-      const result = await run("/api/payments", { amount, requestKey: key.current.value });
-      if (!result.url) throw new Error("Ссылка на оплату пока недоступна. Обновите статус счёта.");
+      const result = await run("/api/payments", { provider, amount, requestKey: key.current.value });
+      if (!result.url) throw new Error("Ссылка на оплату пока недоступна. Повторите запрос с той же суммой.");
       window.location.assign(result.url);
     } catch (reason) {
-      setError(reason instanceof Error && reason.name !== "AbortError" ? reason.message : "Ответ не получен. Повторите запрос с той же суммой или обновите историю.");
+      notifyError(reason instanceof Error && reason.name !== "AbortError" ? reason.message : "Ответ не получен. Повторите запрос с той же суммой или обновите страницу.");
     } finally { pending.current = false; setBusy(false); }
   }
 
-  async function refresh(id?: string) {
-    if (pending.current) return;
-    pending.current = true;
-    setBusy(true);
-    setError("");
-    try {
-      if (id) await run(`/api/payments/${id}`, {});
-      await load();
-    } catch (reason) { setError(reason instanceof Error && reason.name !== "AbortError" ? reason.message : "Не удалось обновить статус. Повторите запрос."); }
-    finally { pending.current = false; setBusy(false); }
-  }
-
   return <div className={styles.panel} aria-busy={busy || loading}>
-    <div className={styles.intro}><p>Пополняйте баланс в долларах США через Heleket. Криптовалюту и сеть можно выбрать на странице оплаты.</p></div>
-    {error && <p className="error" role="alert">{error}{data ? " Последние полученные данные сохранены ниже." : ""}</p>}
     <div className={styles.layout}>
       <section className={styles.balance} aria-labelledby="payment-balance">
         <div className={styles.balanceHeading}><h2 id="payment-balance">Баланс</h2><Wallet size={24} weight="regular" aria-hidden="true" /></div>
@@ -139,27 +144,36 @@ export function PaymentPanel({ active, onConfirmed }: { active: boolean; onConfi
           {fieldError && <p id="payment-amount-error" className="error">{fieldError}</p>}
         </div>
         <div className={styles.presets} role="group" aria-label="Суммы пополнения">{[10, 25, 50].map(value => <button className="button" type="button" disabled={busy} key={value} onClick={() => updateAmount(String(value))}>{formatUsd(value * 100)}</button>)}</div>
+        <fieldset className={styles.services} aria-describedby={providerError ? "payment-service-error" : undefined}>
+          <legend>Сервис для оплаты</legend>
+          <label className={styles.service} data-unavailable={!data?.settings.enabled} data-selected={provider === "heleket"}
+            onClick={() => { if (data && !data.settings.enabled) onNotify("Приём платежей пока недоступен.", "warning"); }}>
+            <input ref={providerInput} type="radio" name="payment-service" value="heleket" checked={provider === "heleket"}
+              disabled={busy || loading || !data?.settings.enabled} aria-invalid={Boolean(providerError)}
+              onChange={() => { setProvider("heleket"); setProviderError(""); }} />
+            <img className={styles.serviceIcon} src="/assets/payments/heleket.svg" width="32" height="32" alt="" aria-hidden="true" />
+            <span className={styles.serviceName}>Heleket</span>
+            <span className={styles.serviceStatus}>{loading ? <Clock size={18} aria-hidden="true" /> : data?.settings.enabled ? <CheckCircle size={18} aria-hidden="true" /> : <WarningCircle size={18} aria-hidden="true" />}{loading ? "Проверяем…" : data?.settings.enabled ? "Доступен" : "Недоступен"}</span>
+          </label>
+          {providerError && <p id="payment-service-error" className="error">{providerError}</p>}
+        </fieldset>
         <dl className={styles.summary}>
           <div><dt>На баланс</dt><dd>{usdCents(amount) !== null ? formatUsd(usdCents(amount)!) : "—"}</dd></div>
           <div><dt>Комиссия</dt><dd>За счёт клиента</dd></div>
         </dl>
         <p className={styles.small}>Комиссия добавляется к сумме счёта. Итог в выбранной криптовалюте покажет Heleket до перевода. Подтверждённая переплата также зачисляется в USD по курсу счёта; доли цента отбрасываются. Зачисление происходит после подтверждения оплаты.</p>
         <button type="submit" className="button button-primary" disabled={busy || loading || !data?.settings.enabled}>{busy ? "Обрабатываем…" : "Перейти к оплате"}</button>
-        {data && !data.settings.enabled && <p className={styles.small}>Приём платежей пока недоступен.</p>}
       </form>
     </div>
     <section className={styles.history} aria-labelledby="payment-history">
-      <div className={styles.historyHeading}><h2 id="payment-history">История пополнений</h2><button type="button" className="button" aria-label="Обновить историю пополнений" disabled={busy || loading} onClick={() => refresh()}><ArrowClockwise size={20} weight="regular" aria-hidden="true" /></button></div>
+      <h2 id="payment-history">История пополнений</h2>
       {data && data.history.length === 0 && <p className={styles.small}>Пополнений пока нет. Создайте первый счёт выше.</p>}
       <ul className={styles.operations}>{data?.history.map(operation => <li key={operation.id}>
         <span className={styles.operationIcon}><Receipt size={22} weight="regular" aria-hidden="true" /></span>
         <div className={styles.operationDescription}><strong>Счёт на {formatUsd(operation.amountCents)}</strong><span>{new Intl.DateTimeFormat("ru", { dateStyle: "short", timeStyle: "short" }).format(new Date(operation.createdAt))} · {operation.id}</span>
           <Status value={operation.status} />{operation.creditCents > 0 && <span>Зачислено {formatUsd(operation.creditCents)}</span>}
         </div>
-        <div className={styles.outcome}>
-          {operation.checkoutUrl && !operation.creditedAt && !["cancel", "fail", "system_fail"].includes(operation.status) && <a href={operation.checkoutUrl} className="button" aria-label={`Открыть оплату счёта ${operation.id}`}><ArrowSquareOut size={20} weight="regular" aria-hidden="true" /></a>}
-          <button type="button" className="button" aria-label={`Обновить статус счёта ${operation.id}`} disabled={busy || loading} onClick={() => refresh(operation.id)}><ArrowClockwise size={20} weight="regular" aria-hidden="true" /></button>
-        </div>
+        {operation.checkoutUrl && !operation.creditedAt && !["cancel", "fail", "system_fail"].includes(operation.status) && <div className={styles.outcome}><a href={operation.checkoutUrl} className="button" aria-label={`Открыть оплату счёта ${operation.id}`}><ArrowSquareOut size={20} weight="regular" aria-hidden="true" /></a></div>}
       </li>)}</ul>
       {data && data.history.length === 50 && <p className={styles.small}>Показаны последние 50 счетов.</p>}
     </section>
