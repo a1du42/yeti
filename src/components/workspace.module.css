@@ -27,7 +27,6 @@
 .header { min-height: var(--size-header); margin-left: var(--size-sidebar); padding: 0 32px; border-bottom: 1px solid var(--color-line); display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--color-surface); }
 .headerBrand { display: flex; align-items: center; gap: 20px; min-width: 0; }
 .headerCaption { font-size: var(--text-small); font-weight: var(--font-weight-medium); }
-.desktopHeaderStatus { display: inline-flex; align-items: center; gap: 8px; color: var(--color-text-secondary); font-size: var(--text-small); }
 .headerAccount, .mobileLogo, .menuButton, .bottomNav { display: none; }
 .main { margin-left: var(--size-sidebar); padding: 40px 32px 64px; max-width: calc(var(--size-content) + var(--size-sidebar)); }
 .pageIntro { margin-bottom: 32px; }
@@ -114,7 +113,7 @@
 @media (max-width: 1023px) {
   .header, .main { margin-left: 0; }
   .header { min-height: 80px; }
-  .headerCaption, .desktopHeaderStatus { display: none; }
+  .headerCaption { display: none; }
   .headerAccount .triggerText, .headerAccount .triggerCaret { display: none; }
   .headerAccount .accountTrigger { min-height: 48px; padding: 4px; width: 48px; }
   .mobileLogo { display: block; }

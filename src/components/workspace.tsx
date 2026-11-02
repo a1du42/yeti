@@ -15,6 +15,7 @@ import { NAME_MAX, nameError as validateName } from "@/lib/validation";
 import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/timezones";
 import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
+import { PaymentSandbox } from "@/components/payment-sandbox";
 import styles from "./workspace.module.css";
 
 export type CurrentUser = {
@@ -316,7 +317,6 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
         <span className={styles.headerCaption}>Личный кабинет</span>
       </div>
       <div className={styles.headerAccount}>{accountMenu("header")}</div>
-      <span className={styles.desktopHeaderStatus}><CheckCircle size={18} weight="regular" aria-hidden="true" />Вход выполнен</span>
     </header>
 
     <main className={styles.main} id="workspace-main" tabIndex={-1}>
@@ -408,14 +408,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
             </section>
           </Tabs.Content>
           <Tabs.Content className={styles.panel} value="payment" forceMount data-visible={view === "payment"} inert={view !== "payment"} aria-hidden={view !== "payment"}>
-            <div className={styles.emptyState}>
-              <Wallet size={40} weight="regular" aria-hidden="true" className={styles.emptyIcon} />
-              <h2>Оплата пока недоступна</h2>
-              <p>Пополнение и история операций появятся после подключения оплаты. Сейчас платёжные действия недоступны.</p>
-              <Link href="/app?tab=settings" className={styles.secondaryButton} onClick={(event) => handleLink(event, "settings")}>
-                <Gear size={20} weight="regular" aria-hidden="true" />Открыть настройки
-              </Link>
-            </div>
+            <PaymentSandbox onCalculated={setToast} />
           </Tabs.Content>
         </div>
       </Tabs.Root>

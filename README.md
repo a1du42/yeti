@@ -4,6 +4,8 @@
 
 Google-вход подключён при наличии серверных настроек; секрет хранится только в `.env.local`.
 
+В профиле доступна вкладка «Оплата» как тестовый стенд: вымышленные баланс и история, ввод суммы и проверка расчёта без перевода денег. Реальная оплата не подключена.
+
 ## Запустить приложение
 
 Стек: Next.js App Router + TypeScript, PostgreSQL + Drizzle, Better Auth; интерфейс — CSS Modules, `tokens.css`, Radix UI и Phosphor Regular. Нужны Node.js, npm и Docker Compose.
