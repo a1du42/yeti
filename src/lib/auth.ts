@@ -9,6 +9,8 @@ import { getDb } from "@/lib/db";
 import { getServerEnv } from "@/lib/env";
 import { scheduleAuthMail } from "@/lib/mail";
 import { emailError, isTimezone, nameError, passwordError } from "@/lib/validation";
+import { genericOAuth, yandex } from "better-auth/plugins/generic-oauth";
+import { getOAuthState } from "better-auth/api";
 import { googleOidcValidation } from "@/lib/google";
 
 const nameSchema = z.string().superRefine((value, context) => {
@@ -57,7 +59,19 @@ function createAuth() {
     appName: "YETI STREAM",
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
-    plugins: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? [googleOidcValidation(env.GOOGLE_CLIENT_ID)] : [],
+    plugins: [
+      ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? [googleOidcValidation(env.GOOGLE_CLIENT_ID)] : []),
+      ...(env.YANDEX_CLIENT_ID && env.YANDEX_CLIENT_SECRET ? [genericOAuth({ config: [{
+        ...yandex({ clientId: env.YANDEX_CLIENT_ID, clientSecret: env.YANDEX_CLIENT_SECRET, scopes: ["login:info", "login:email"], pkce: true }),
+        authorizationUrl: "https://oauth.yandex.ru/authorize",
+        tokenUrl: "https://oauth.yandex.ru/token",
+        requireEmailVerification: true,
+        mapProfileToUser: async () => {
+          const state = await getOAuthState();
+          return { timezone: typeof state?.timezone === "string" && isTimezone(state.timezone) ? state.timezone : "" };
+        },
+      }] })] : []),
+    ],
     onAPIError: { errorURL: env.BETTER_AUTH_URL + "/app/auth?oauthError=1" },
     socialProviders: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? {
       google: {
@@ -114,7 +128,8 @@ function createAuth() {
     },
     account: {
       encryptOAuthTokens: true,
-      accountLinking: { enabled: false, disableImplicitLinking: true },
+      // Explicit linking uses the signed-in user; implicit linking still matches verified emails.
+      accountLinking: { enabled: true, disableImplicitLinking: false, requireLocalEmailVerified: true, trustedProviders: ["yandex"], allowDifferentEmails: true, updateUserInfoOnLink: false },
     },
     verification: { storeIdentifier: "hashed", storeInDatabase: true },
     rateLimit: {

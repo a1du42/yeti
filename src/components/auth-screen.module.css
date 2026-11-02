@@ -39,3 +39,5 @@
 .savedToast { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 32px); z-index: var(--z-toast); border: 1px solid var(--color-success); }
 @media (max-width: 767px) { .header { padding-inline: 16px; }.brandLabel { display: none; }.header { justify-content: flex-end; }.main { margin-top: 8px; }.card { padding: 24px 16px; }.brand { margin-bottom: 24px; }.tab { padding-inline: 0; gap: 4px; } }
 @media (prefers-reduced-motion: reduce) { .panel { transition-duration: var(--dur-reduced), 0s; transition-delay: 0s, var(--dur-reduced); }.panel[data-state="active"] { transition-delay: 0s; } }
+
+.providers { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; }

@@ -2,6 +2,8 @@
 (() => {
   'use strict';
   const root = document.documentElement;
+  document.addEventListener('pointerdown', () => { root.dataset.tabPointer = 'true'; }, true);
+  document.addEventListener('keydown', () => { delete root.dataset.tabPointer; }, true);
   const byId = id => document.getElementById(id);
   const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
   const reduceToggle = byId('reduce-motion');

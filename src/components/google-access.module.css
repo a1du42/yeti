@@ -1,0 +1,10 @@
+.access { display: grid; gap: 8px; }
+.provider { width: 100%; gap: 8px; transition: opacity var(--dur-short) var(--ease-in-out), transform var(--dur-press) var(--ease-out); }
+.provider img { display: block; object-fit: contain; }
+.provider:active:not(:disabled) { transform: scale(.98); }
+.provider:disabled { opacity: .65; }
+.progress { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 24px; margin: 0; font-size: var(--text-small); color: var(--color-text-secondary); opacity: 0; transition: opacity var(--dur-short) var(--ease-out); }
+.progress[data-visible="true"] { opacity: 1; }
+.error { display: flex; align-items: center; gap: 8px; color: var(--color-danger); font-size: var(--text-small); }
+.error svg, .progress svg { flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) { .provider, .progress { transition-duration: var(--dur-reduced); } .provider:active:not(:disabled) { transform: none; } }

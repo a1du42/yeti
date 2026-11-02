@@ -14,6 +14,7 @@ import { authClient } from "@/lib/auth-client";
 import { NAME_MAX, nameError as validateName } from "@/lib/validation";
 import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/timezones";
 import { IconTooltip, Logo, ThemeChoices } from "@/components/ui";
+import { GoogleAccess } from "@/components/google-access";
 import styles from "./workspace.module.css";
 
 export type CurrentUser = {
@@ -46,7 +47,8 @@ function formatCreatedAt(value: string, timezone: string) {
   } catch { return "Не удалось отобразить дату"; }
 }
 
-export function Workspace({ user }: { user: CurrentUser }) {
+export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { user: CurrentUser; providers: string[]; googleEnabled: boolean; yandexEnabled: boolean }) {
+  const [pointerFocus, setPointerFocus] = useState(false);
   const session = authClient.useSession();
   const router = useRouter();
   const params = useSearchParams();
@@ -251,7 +253,7 @@ export function Workspace({ user }: { user: CurrentUser }) {
     </Popover.Root>;
   }
 
-  return <div className={styles.shell}>
+  return <div className={styles.shell} data-pointer={pointerFocus} onPointerDownCapture={() => setPointerFocus(true)} onKeyDownCapture={() => setPointerFocus(false)}>
     <a className={styles.skipLink} href="#workspace-main">К содержимому</a>
     <aside className={styles.sidebar} aria-label="Боковая панель">
       <Link href="/app" className={styles.brand} aria-label="YETI STREAM — личный кабинет"><Logo /></Link>
@@ -374,6 +376,20 @@ export function Workspace({ user }: { user: CurrentUser }) {
                     <button type="button" className={styles.secondaryButton} onClick={resetSettings} disabled={pending !== null}>Отмена</button>
                   </div>
                 </form>
+                <section className={styles.accessMethods} aria-labelledby="access-methods">
+                  <h3 id="access-methods">Способы входа</h3>
+                  <p className={styles.muted}>Подключённые способы открывают один аккаунт. Можно подключить сервис с другой почтой. Почта профиля сохранится.</p>
+                  {params.get("oauthError") === "1" && <p className={styles.errorMessage} role="alert"><WarningCircle size={20} aria-hidden="true" />Не удалось подключить сервис. Повторите попытку. Если аккаунт сервиса уже подключён к другому аккаунту YETI STREAM, выберите другой.</p>}
+                  <div className={styles.accessMethod}><strong>Email и пароль</strong><span className={providers.includes("credential") ? styles.successStatus : styles.neutralStatus}>{providers.includes("credential") ? <CheckCircle size={20} aria-hidden="true" /> : <SignOut size={20} aria-hidden="true" />}{providers.includes("credential") ? "Подключён" : "Пароль не задан"}</span>
+                    {!providers.includes("credential") && <Link href="/app/auth" className={styles.secondaryButton}>Задать пароль через «Не помню пароль»</Link>}
+                  </div>
+                  {(googleEnabled || providers.includes("google")) && <div className={styles.accessMethod}><strong>Google</strong><span className={providers.includes("google") ? styles.successStatus : styles.neutralStatus}>{providers.includes("google") ? <CheckCircle size={20} aria-hidden="true" /> : <WarningCircle size={20} aria-hidden="true" />}{providers.includes("google") ? "Подключён" : "Не подключён"}</span>
+                    {googleEnabled && !providers.includes("google") && <GoogleAccess linking active={view === "settings"} />}
+                  </div>}
+                  {(yandexEnabled || providers.includes("yandex")) && <div className={styles.accessMethod}><strong>Яндекс ID</strong><span className={providers.includes("yandex") ? styles.successStatus : styles.neutralStatus}>{providers.includes("yandex") ? <CheckCircle size={20} aria-hidden="true" /> : <WarningCircle size={20} aria-hidden="true" />}{providers.includes("yandex") ? "Подключён" : "Не подключён"}</span>
+                    {yandexEnabled && !providers.includes("yandex") && <GoogleAccess provider="yandex" linking active={view === "settings"} />}
+                  </div>}
+                </section>
               </Tabs.Content>
               <Tabs.Content className={styles.panel} value="payment" forceMount inert={view !== "payment"} aria-hidden={view !== "payment"}>
                 <div className={styles.emptyState}>

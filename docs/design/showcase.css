@@ -496,3 +496,5 @@ dialog::backdrop { background: var(--color-scrim); }
 .auth-providers { display: flex; flex-wrap: wrap; justify-content: center; }
 .auth-providers .btn { flex: 0 0 calc((100% - (var(--auth-provider-columns, 4) - 1) * var(--space-3)) / var(--auth-provider-columns, 4)); }
 .auth-config { margin-block: var(--space-6); }
+
+:root[data-tab-pointer="true"] [role="tab"]:focus-visible { outline: none; }

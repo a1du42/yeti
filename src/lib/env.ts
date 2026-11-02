@@ -10,6 +10,8 @@ const schema = z.object({
     return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password && !url.search && !url.hash && url.pathname === "/";
   }),
   BETTER_AUTH_SECRET: z.string().min(32),
+  YANDEX_CLIENT_ID: z.string().optional(),
+  YANDEX_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   SMTP_HOST: z.string().min(1).refine(noNewlines),
