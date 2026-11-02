@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import * as Popover from "@radix-ui/react-popover";
 import * as Tabs from "@radix-ui/react-tabs";
-import { ArrowLeft, CheckCircle, EnvelopeSimple, Eye, EyeSlash, Key, SignIn, UserPlus, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, CheckCircle, EnvelopeSimple, Eye, EyeSlash, Palette, Key, SignIn, UserPlus, WarningCircle } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { emailError, isTimezone, nameError, passwordError } from "@/lib/validation";
 import { timezoneLabel, timezoneOptions } from "@/lib/timezones";
-import { IconTooltip, Logo, ThemeChoices } from "@/components/ui";
+import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
 import styles from "./auth-screen.module.css";
 
@@ -135,15 +136,6 @@ function AccessForm({ mode, active, goLogin, goRecovery, googleEnabled, yandexEn
     });
   };
 
-  const resend = () => {
-    if (!validate(["email"])) return;
-    void run(async signal => {
-      const result = await authClient.sendVerificationEmail({ email: fields.email.trim(), callbackURL: "/app/auth?verified=1", fetchOptions: { signal } });
-      if (signal.aborted) return;
-      setNotice(result.error ? { text: result.error.status === 429 ? "Слишком много запросов. Подождите немного и повторите" : "Не удалось отправить запрос. Повторите попытку", error: true } : { text: "Если адрес ожидает подтверждения, придёт письмо со ссылкой. Проверьте входящие и спам" });
-    });
-  };
-
   const errorEntries = Object.entries(errors).filter((entry): entry is [FieldName, string] => !!entry[1]);
   const passwordField = (field: "password" | "repeat") => {
     const label = field === "password" ? mode === "reset" ? "Новый пароль" : "Пароль" : mode === "reset" ? "Повторите новый пароль" : "Повторите пароль";
@@ -190,9 +182,8 @@ function AccessForm({ mode, active, goLogin, goRecovery, googleEnabled, yandexEn
       </div>}
       <button type="submit" disabled={busy} className={`button button-primary ${styles.submit}`}>{busy ? "Проверяем…" : mode === "login" ? "Войти" : mode === "register" ? "Создать аккаунт" : mode === "recovery" ? "Отправить ссылку" : "Сохранить пароль"}</button>
     </>}
-    {mode === "login" ? <div className={styles.secondaryActions}>
+    {mode === "login" ? <div className={styles.loginActions}>
       <button className={styles.linkButton} type="button" onClick={goRecovery}>Не помню пароль</button>
-      <button className={styles.linkButton} type="button" disabled={busy} onClick={resend}>Повторить письмо подтверждения</button>
     </div> : (mode === "recovery" || mode === "reset") && <button className={styles.back} type="button" onClick={goLogin}><ArrowLeft size={18} aria-hidden="true" />Вернуться ко входу</button>}
     {mode === "recovery" && <p className={styles.description}>Если входили через сервис без email, войдите тем же способом.</p>}
   </form>;
@@ -213,9 +204,15 @@ export function AuthScreen({ initialMode, verified, invalid, googleEnabled, yand
   const modes: Mode[] = standard ? ["login", "register"] : [mode];
   return <div className={styles.screen} data-pointer={pointerFocus} onPointerDownCapture={() => setPointerFocus(true)} onKeyDownCapture={() => setPointerFocus(false)}>
     <a className="skip-link" href="#auth-main">К форме входа</a>
-    <header className={styles.header}><span className={styles.brandLabel}>YETI STREAM</span><ThemeChoices /></header>
     <main id="auth-main" className={styles.main}>
-      <div className={styles.brand}><Logo /></div>
+      <div className={styles.brand}><Logo /><div className={styles.appearance}>
+        <Popover.Root>
+          <Popover.Trigger asChild><button type="button" className={styles.appearanceButton} aria-label="Оформление"><Palette size={20} weight="regular" aria-hidden="true" /></button></Popover.Trigger>
+          <Popover.Portal><Popover.Content className={styles.appearancePopup} align="end" sideOffset={8} collisionPadding={16} tabIndex={-1} data-popup-focus onOpenAutoFocus={focusPopupOnOpen} aria-label="Оформление">
+            <p className={styles.appearanceTitle}>Оформление</p><ThemeChoices />
+          </Popover.Content></Popover.Portal>
+        </Popover.Root>
+      </div></div>
       <h1 className="sr-only">Вход в YETI STREAM</h1>
       <section className={styles.card} aria-label="Доступ к аккаунту">
         {oauthError && <p className={`${styles.banner} ${styles.noticeError}`} role="alert"><WarningCircle size={20} aria-hidden="true" />{oauthMessage || "Не удалось войти через сервис. Попробуйте ещё раз или войдите по email."}</p>}

@@ -94,6 +94,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
     }
   }, [urlView]);
   useEffect(() => {
+    setToast("");
     document.title = `${labels[view]} — YETI STREAM`;
     if (focusAfterNavigation.current) {
       heading.current?.focus({ preventScroll: true });
@@ -117,6 +118,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
   }, []);
 
   function navigate(next: View, focusContent = true) {
+    setToast("");
     focusAfterNavigation.current = focusContent;
     if (menuOpen) skipMenuFocusRestore.current = true;
     setView(next);

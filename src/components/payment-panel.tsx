@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowSquareOut, CheckCircle, Clock, Receipt, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { ArrowSquareOut, CheckCircle, Clock, Receipt, Wallet, WarningCircle, Question } from "@phosphor-icons/react";
 import { formatUsd, MAX_TOPUP_CENTS, MIN_TOPUP_CENTS, usdCents } from "@/lib/money";
+import { IconTooltip } from "@/components/ui";
 import styles from "./payment-panel.module.css";
 
 type Operation = { id: string; amountCents: number; creditCents: number; status: string; createdAt: string; creditedAt: string | null; checkoutUrl: string | null };
@@ -134,13 +135,12 @@ export function PaymentPanel({ active, onNotify }: { active: boolean; onNotify: 
         {updated && <p className={styles.small}>Обновлено в {updated}</p>}
       </section>
       <form className={styles.form} onSubmit={submit} noValidate aria-labelledby="payment-topup">
-        <h2 id="payment-topup">Пополнение баланса</h2>
+        <div className={styles.helpHeading}><h2 id="payment-topup">Пополнение баланса</h2><IconTooltip label="Комиссия добавляется к сумме счёта. Итоговую сумму и валюту перевода покажет выбранный платёжный сервис до оплаты. Подтверждённая переплата также зачисляется в USD по курсу счёта; доли цента отбрасываются. Зачисление происходит после подтверждения оплаты."><button type="button" className={styles.helpButton} aria-label="Условия пополнения баланса"><Question size={20} weight="regular" aria-hidden="true" /></button></IconTooltip></div>
         <div className="field">
-          <label htmlFor="payment-amount">Сумма, USD <span className={styles.optional}>(обязательно)</span></label>
+          <div className={styles.helpHeading}><label htmlFor="payment-amount">Сумма, USD <span className={styles.optional}>(обязательно)</span></label><IconTooltip label={`От ${formatUsd(min)} до ${formatUsd(max)}, с точностью до цента.`}><button type="button" className={styles.helpButton} aria-label="Допустимая сумма пополнения"><Question size={20} weight="regular" aria-hidden="true" /></button></IconTooltip></div>
           <input id="payment-amount" ref={input} type="number" inputMode="decimal" min={min / 100} max={max / 100} step="0.01" required value={amount} disabled={busy}
-            aria-invalid={Boolean(fieldError)} aria-describedby={`payment-hint${fieldError ? " payment-amount-error" : ""}`}
+            aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? "payment-amount-error" : undefined}
             onChange={event => updateAmount(event.target.value)} onBlur={() => setFieldError(validateAmount(amount))} />
-          <p id="payment-hint" className={styles.small}>От {formatUsd(min)} до {formatUsd(max)}, с точностью до цента. Значение вне диапазона сразу заменяется ближайшей границей. Поле можно очистить.</p>
           {fieldError && <p id="payment-amount-error" className="error">{fieldError}</p>}
         </div>
         <div className={styles.presets} role="group" aria-label="Суммы пополнения">{[10, 25, 50].map(value => <button className="button" type="button" disabled={busy} key={value} onClick={() => updateAmount(String(value))}>{formatUsd(value * 100)}</button>)}</div>
@@ -161,7 +161,6 @@ export function PaymentPanel({ active, onNotify }: { active: boolean; onNotify: 
           <div><dt>На баланс</dt><dd>{usdCents(amount) !== null ? formatUsd(usdCents(amount)!) : "—"}</dd></div>
           <div><dt>Комиссия</dt><dd>За счёт клиента</dd></div>
         </dl>
-        <p className={styles.small}>Комиссия добавляется к сумме счёта. Итог в выбранной криптовалюте покажет Heleket до перевода. Подтверждённая переплата также зачисляется в USD по курсу счёта; доли цента отбрасываются. Зачисление происходит после подтверждения оплаты.</p>
         <button type="submit" className="button button-primary" disabled={busy || loading || !data?.settings.enabled}>{busy ? "Обрабатываем…" : "Перейти к оплате"}</button>
       </form>
     </div>

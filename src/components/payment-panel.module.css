@@ -56,3 +56,7 @@
   .operations li { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
   .operationIcon { display: none; }
 }
+
+.helpHeading { display: flex; align-items: center; gap: 8px; }
+.helpButton { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-text-secondary); }
+.helpButton:hover { background: var(--color-muted); }
