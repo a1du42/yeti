@@ -194,6 +194,7 @@ function AccessForm({ mode, active, goLogin, goRecovery }: { mode: Mode; active:
 }
 
 export function AuthScreen({ initialMode, verified, invalid }: { initialMode: Mode; verified: boolean; invalid: boolean }) {
+  const [pointerFocus, setPointerFocus] = useState(false);
   const [mode, setMode] = useState<Mode>(initialMode);
   const loginTab = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
@@ -205,7 +206,7 @@ export function AuthScreen({ initialMode, verified, invalid }: { initialMode: Mo
   }, [mode]);
   const standard = mode === "login" || mode === "register";
   const modes: Mode[] = standard ? ["login", "register"] : [mode];
-  return <div className={styles.screen}>
+  return <div className={styles.screen} data-pointer={pointerFocus} onPointerDownCapture={() => setPointerFocus(true)} onKeyDownCapture={() => setPointerFocus(false)}>
     <a className="skip-link" href="#auth-main">К форме входа</a>
     <header className={styles.header}><span className={styles.brandLabel}>YETI STREAM</span><ThemeChoices /></header>
     <main id="auth-main" className={styles.main}>
