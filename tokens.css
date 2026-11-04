@@ -39,7 +39,16 @@
 
   --color-brand-primary: var(--color-palette-graphite);
   --color-brand-accent: var(--color-palette-blue);
+  --color-launch-progress-end: #008f88;
   --color-brand-detail: var(--color-palette-ice);
+  /* Platform identifiers and contrast variants for white text. */
+  --color-platform-youtube: #ff0033;
+  --color-platform-twitch: #9146ff;
+  --color-platform-kick: #53fc18;
+  --color-platform-youtube-fill: color-mix(in srgb, var(--color-platform-youtube) 90%, black);
+  --color-platform-twitch-fill: color-mix(in srgb, var(--color-platform-twitch) 90%, black);
+  --color-platform-kick-fill: color-mix(in srgb, var(--color-platform-kick) 50%, black);
+  --color-platform-ink: var(--color-palette-white);
   --font-wordmark: "Rubik", "Segoe UI", sans-serif;
   --font-weight-wordmark: 700;
   --font-display: "Rubik", "Segoe UI", sans-serif;
@@ -85,6 +94,8 @@
   --size-sidebar: 15rem;
   --size-header: 4rem;
   --size-bottom-nav: 4.5rem;
+  --size-mobile-bar: 56px;
+  --size-mobile-bottom-nav: 52px;
   --size-content: 80rem;
   --size-content-wide: 90rem;
   --size-form: 40rem;
@@ -137,6 +148,8 @@
   --color-success: var(--color-palette-light-success);
   --color-success-bg: var(--color-palette-light-success-bg);
   --color-warning: var(--color-palette-light-warning);
+  --color-launch-progress-paused: #a34a08;
+  --color-launch-progress-paused-end: #c06616;
   --color-warning-bg: var(--color-palette-light-warning-bg);
   --color-danger: var(--color-palette-light-danger);
   --color-danger-bg: var(--color-palette-light-danger-bg);
@@ -166,6 +179,8 @@
   --color-success: var(--color-palette-dark-success);
   --color-success-bg: var(--color-palette-dark-success-bg);
   --color-warning: var(--color-palette-dark-warning);
+  --color-launch-progress-paused: #e98132;
+  --color-launch-progress-paused-end: #ffb367;
   --color-warning-bg: var(--color-palette-dark-warning-bg);
   --color-danger: var(--color-palette-dark-danger);
   --color-danger-bg: var(--color-palette-dark-danger-bg);
@@ -196,6 +211,8 @@
     --color-success: var(--color-palette-dark-success);
     --color-success-bg: var(--color-palette-dark-success-bg);
     --color-warning: var(--color-palette-dark-warning);
+    --color-launch-progress-paused: #e98132;
+    --color-launch-progress-paused-end: #ffb367;
     --color-warning-bg: var(--color-palette-dark-warning-bg);
     --color-danger: var(--color-palette-dark-danger);
     --color-danger-bg: var(--color-palette-dark-danger-bg);

@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["a1d.by"],
   poweredByHeader: false,
   agentRules: false,
   logging: { incomingRequests: false },

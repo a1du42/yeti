@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactElement } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Desktop, Sun, Moon } from "@phosphor-icons/react";
 import styles from "./ui.module.css";
@@ -18,21 +18,20 @@ export function Logo({ mark = false }: { mark?: boolean }) {
   </span>;
 }
 
-export function IconTooltip({ label, children }: { label: string; children: ReactElement }) {
+export function IconTooltip({ label, children, toggleOnClick = true }: { label: string; children: ReactElement; toggleOnClick?: boolean }) {
   const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (!open) return;
-    const close = (event: Event) => {
-      if (event.type === "keydown" && (event as KeyboardEvent).key !== "Escape") return;
-      setOpen(false);
-    };
-    document.addEventListener("pointerdown", close);
-    document.addEventListener("keydown", close);
-    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", close); };
-  }, [open]);
+  const wasOpenOnPointerDown = useRef(false);
   return <Tooltip.Provider delayDuration={240} skipDelayDuration={0}>
     <Tooltip.Root open={open} onOpenChange={setOpen}>
-      <Tooltip.Trigger asChild onClick={() => setOpen(true)} onFocus={() => setOpen(true)}>{children}</Tooltip.Trigger>
+      <Tooltip.Trigger
+        asChild
+        onPointerDown={() => { wasOpenOnPointerDown.current = open; }}
+        onClick={event => {
+          if (!toggleOnClick) { setOpen(false); return; }
+          event.preventDefault();
+          setOpen(!(event.detail === 0 ? open : wasOpenOnPointerDown.current));
+        }}
+      >{children}</Tooltip.Trigger>
       <Tooltip.Portal><Tooltip.Content className={styles.tooltip} sideOffset={8} collisionPadding={16}>{label}</Tooltip.Content></Tooltip.Portal>
     </Tooltip.Root>
   </Tooltip.Provider>;

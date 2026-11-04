@@ -10,10 +10,13 @@ const schema = z.object({
     return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password && !url.search && !url.hash && url.pathname === "/";
   }),
   BETTER_AUTH_SECRET: z.string().min(32),
+  ADMIN_EMAIL: z.preprocess(value => value === "" ? undefined : value, z.email().optional()),
   YANDEX_CLIENT_ID: z.string().optional(),
   YANDEX_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  STREAMSKILL_API_KEY: z.string().refine(noNewlines).optional(),
+  STREAMSKILL_LIVE_ENABLED: z.enum(["true", "false"]).default("false"),
   HELEKET_MERCHANT_ID: z.string().optional(),
   HELEKET_PAYMENT_KEY: z.string().optional(),
   HELEKET_ENABLED: z.enum(["true", "false"]).default("false"),

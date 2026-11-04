@@ -5,6 +5,12 @@ export const metadata: Metadata = {
   title: { default: "YETI STREAM", template: "%s · YETI STREAM" },
   description: "Рабочее пространство YETI STREAM",
   robots: { index: false, follow: false },
+  icons: {
+    icon: [
+      { url: "/assets/logo-mark.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/assets/logo-mark-dark.svg", type: "image/svg+xml", sizes: "any", media: "(prefers-color-scheme: dark)" },
+    ],
+  },
 };
 
 const themeScript = `(function(){try{var t=localStorage.getItem('yeti-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme}catch(e){}})()`;

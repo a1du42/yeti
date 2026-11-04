@@ -1,0 +1,116 @@
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4 */
+.shell { min-height: 100dvh; }
+.sidebar, .compactHeader, .bottomNav, .menuTrigger { display: none; }
+.page { display: grid; align-content: start; gap: var(--space-6); width: 100%; max-width: var(--size-content); min-width: 0; margin-inline: auto; padding: var(--space-6) var(--space-3) calc(var(--size-mobile-bottom-nav) + var(--space-8) + env(safe-area-inset-bottom, 0px)); }
+.header { display: grid; gap: var(--space-2); }
+.header > p:first-child { color: var(--color-selected-text); font-size: var(--text-small); font-weight: var(--font-weight-medium); }
+.header > p:last-child, .secondary { color: var(--color-text-secondary); font-size: var(--text-small); overflow-wrap: anywhere; }
+.panel { min-width: 0; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-panel); }
+.sectionHeading { display: grid; gap: var(--space-2); padding: var(--space-4); }
+.form, .dialog, .filters, .pricingBody { display: grid; gap: var(--space-4); min-width: 0; }
+.pricing { max-width: 54rem; }
+.pricingBody { border-top: 1px solid var(--color-line); padding: var(--space-4); }
+.unitInput { position: relative; }
+.unitInput input { padding-inline-end: var(--space-10); }
+.unitInput span { position: absolute; inset-inline-end: var(--space-4); top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-secondary); }
+.pricingExample, .preview { display: grid; gap: var(--space-2); margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-control); background: var(--color-muted); font-size: var(--text-small); }
+.pricingExample > div, .preview > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.pricingExample dt, .preview dt { color: var(--color-text-secondary); }
+.pricingExample dd, .preview dd { margin: 0; font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pricingExample > div + div { padding-top: var(--space-2); border-top: 1px solid var(--color-line); }
+
+.filters { align-items: end; gap: var(--space-3); padding: 0 var(--space-4) var(--space-4); }
+.filterButtons, .pagination { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.iconButton { width: var(--size-control); height: var(--size-control); padding: 0; }
+.iconButton:disabled { cursor: default; }
+.feedback { margin: 0 var(--space-4) var(--space-4); }
+.table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: var(--text-small); }
+.table th, .table td { padding: var(--space-2); border-top: 1px solid var(--color-line); text-align: start; overflow-wrap: anywhere; }
+.table thead th { background: var(--color-muted); color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+.table tbody th { font-weight: var(--font-weight-medium); }
+.table tbody tr { height: 52px; }
+.table :is(th, td):first-child { padding-inline-start: var(--space-3); }
+.table :is(th, td):last-child { padding-inline-end: var(--space-3); }
+.table .number, .table .actions { text-align: end; font-variant-numeric: tabular-nums; }
+.number { width: 30%; }
+.actions { width: 5.25rem; }
+.actions button { vertical-align: middle; }
+.blocked { display: flex; align-items: flex-start; gap: var(--space-1); margin-top: var(--space-1); color: var(--color-warning); font-size: var(--text-caption); }
+.blocked svg { flex: none; }
+.idColumn, .emailColumn { display: none; }
+.inlineEmail { display: block; font-weight: 400; }
+.pagination { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-line); }
+.pagination > span { margin-inline-end: auto; }
+.empty { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); border-top: 1px solid var(--color-line); color: var(--color-text-secondary); }
+.empty svg { flex: none; }
+
+.overlay { position: fixed; inset: 0; z-index: var(--z-backdrop); background: var(--color-scrim); animation: adminFade var(--dur-fast) var(--ease-out); }
+.dialog { position: fixed; z-index: var(--z-dialog); inset: 50% auto auto 50%; transform: translate(-50%, -50%); width: min(var(--size-dialog), calc(100% - var(--space-6))); max-height: calc(100dvh - var(--space-8)); overflow: auto; overscroll-behavior: contain; padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-panel); box-shadow: var(--shadow-overlay); animation: adminFade var(--dur-short) var(--ease-out); }
+.dialogHeader { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.dialogHeader > button { flex: none; }
+.accountDetails { display: grid; gap: var(--space-1); overflow-wrap: anywhere; }
+.accountActions { display: grid; gap: var(--space-2); }
+.accountActions button { justify-content: flex-start; text-align: start; }
+.accountActions svg { flex: none; }
+.dangerText, .dangerButton { color: var(--color-danger); }
+.dangerButton { border-color: var(--color-danger); background: var(--color-danger-bg); }
+.adjustmentFields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-3); align-items: start; }
+.dialog textarea { min-width: 0; width: 100%; padding: 10px 12px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-control-border); border-radius: var(--radius-control); resize: vertical; }
+.dialog textarea[aria-invalid="true"] { border-color: var(--color-danger); }
+.history { border-top: 1px solid var(--color-line); }
+.history summary { cursor: pointer; padding-block: var(--space-3); font-size: var(--text-small); font-weight: var(--font-weight-medium); }
+.historyTable .number { width: 35%; }
+.toast { position: fixed; z-index: var(--z-toast); inset-inline-start: 50%; bottom: calc(var(--size-mobile-bottom-nav) + var(--space-4) + env(safe-area-inset-bottom, 0px)); translate: -50% 0; display: flex; align-items: center; gap: var(--space-2); width: max-content; max-width: calc(100% - var(--space-8)); padding: var(--space-3) var(--space-4); color: var(--color-success); background: var(--color-success-bg); border: 1px solid var(--color-success); border-radius: var(--radius-control); pointer-events: none; animation: adminToast var(--dur-base) var(--ease-out); }
+
+.sectionNav { display: grid; gap: var(--space-2); }
+.sectionNav a, .bottomNav > :is(a, button) { display: flex; align-items: center; gap: var(--space-2); min-height: var(--size-control); padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--radius-control); color: var(--color-text); background: transparent; text-decoration: none; font-size: var(--text-small); font-weight: var(--font-weight-medium); }
+.sectionNav a:hover, .bottomNav > :is(a, button):hover { background: var(--color-muted); }
+.sectionNav a[aria-current="page"], .bottomNav > :is(a[aria-current="page"], button[data-state="open"]) { color: var(--color-selected-text); background: var(--color-selected); }
+.compactHeader { display: flex; align-items: center; gap: var(--space-3); min-height: var(--size-header); padding-inline: var(--space-4); border-bottom: 1px solid var(--color-line); background: var(--color-surface); font-weight: var(--font-weight-medium); }
+.compactHeader img { width: 36px; height: auto; }
+
+@keyframes adminFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes adminToast { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (max-width: 360px) {
+  .adjustmentFields { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  .header > p:first-child { display: none; }
+  .bottomNav { position: fixed; inset: auto 0 0; z-index: var(--z-sticky); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); min-height: calc(var(--size-mobile-bottom-nav) + env(safe-area-inset-bottom, 0px)); padding: 0 var(--space-2) env(safe-area-inset-bottom, 0px); border-top: 1px solid var(--color-line); background: var(--color-surface); }
+  .bottomNav > :is(a, button) { flex-direction: column; justify-content: center; gap: 2px; padding: var(--space-1); line-height: var(--line-label); text-align: center; }
+  .bottomNav :focus-visible { outline-offset: calc(-1 * var(--rule-focus)); }
+}
+@media (min-width: 600px) {
+  .page { padding-inline: var(--space-6); }
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .table :is(th, td):first-child { padding-inline-start: var(--space-4); }
+  .table :is(th, td):last-child { padding-inline-end: var(--space-4); }
+}
+@media (min-width: 768px) {
+  .header > p:first-child { display: none; }
+  .menuTrigger { display: inline-flex; margin-inline-start: auto; }
+  .drawer { inset: 0 auto 0 0; transform: none; width: min(var(--size-sheet), 100%); max-height: 100%; align-content: start; border-radius: 0; }
+  .page { padding-block: var(--space-8); }
+  .dialog, .sectionHeading, .pricingBody { padding: var(--space-6); }
+  .filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr) auto; padding-inline: var(--space-6); }
+  .pricingBody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: var(--space-6); }
+  .emailColumn { display: table-cell; width: 32%; }
+  .inlineEmail { display: none; }
+  .number { width: 22%; }
+  .toast { bottom: max(var(--space-4), env(safe-area-inset-bottom, 0px)); }
+}
+@media (min-width: 1024px) {
+  .shell { display: grid; grid-template-columns: var(--size-sidebar) minmax(0, 1fr); }
+  .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; gap: var(--space-6); height: 100dvh; overflow-y: auto; padding: var(--space-6) var(--space-4); border-inline-end: 1px solid var(--color-line); background: var(--color-surface); }
+  .sidebar > :last-child { margin-top: auto; }
+  .compactHeader { display: none; }
+  .header > p:first-child { display: block; }
+}
+@media (min-width: 1200px) {
+  .idColumn { display: table-cell; width: 23%; }
+  .emailColumn { width: 25%; }
+  .number { width: 18%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog, .overlay, .toast { animation: adminFade var(--dur-reduced) var(--ease-out); }
+}

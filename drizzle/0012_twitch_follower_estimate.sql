@@ -1,0 +1,1 @@
+ALTER TABLE "launch_order" ADD COLUMN "follower_estimate" jsonb;

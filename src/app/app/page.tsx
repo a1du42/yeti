@@ -17,5 +17,5 @@ export default async function AppPage() {
   const { id, name, email, emailVerified, timezone, createdAt } = session.user;
   const accounts = await getDb().select({ provider: account.providerId }).from(account).where(eq(account.userId, id));
   const env = getServerEnv();
-  return <Workspace providers={accounts.map(value => value.provider)} googleEnabled={Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)} yandexEnabled={Boolean(env.YANDEX_CLIENT_ID && env.YANDEX_CLIENT_SECRET)} user={{ id, name, email, emailVerified, timezone, createdAt: createdAt.toISOString() }} />;
+  return <Workspace liveOrdering={env.STREAMSKILL_LIVE_ENABLED === "true"} providers={accounts.map(value => value.provider)} googleEnabled={Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)} yandexEnabled={Boolean(env.YANDEX_CLIENT_ID && env.YANDEX_CLIENT_SECRET)} user={{ id, name, email, emailVerified, timezone, createdAt: createdAt.toISOString() }} />;
 }

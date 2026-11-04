@@ -1,0 +1,8 @@
+ALTER TABLE "launch_order" DROP CONSTRAINT "launch_order_quantity";--> statement-breakpoint
+ALTER TABLE "launch_order" DROP CONSTRAINT "launch_order_hours";--> statement-breakpoint
+ALTER TABLE "launch_order" DROP CONSTRAINT "launch_order_service";--> statement-breakpoint
+ALTER TABLE "launch_order" DROP CONSTRAINT "launch_order_amount";--> statement-breakpoint
+ALTER TABLE "launch_order" ADD CONSTRAINT "launch_order_quantity" CHECK ("launch_order"."quantity" between 1 and 1000000);--> statement-breakpoint
+ALTER TABLE "launch_order" ADD CONSTRAINT "launch_order_hours" CHECK ("launch_order"."hours" is null or "launch_order"."hours" between 1 and 720);--> statement-breakpoint
+ALTER TABLE "launch_order" ADD CONSTRAINT "launch_order_service" CHECK ("launch_order"."service" in ('viewers', 'views', 'followers', 'twitch-viewers-test', 'twitch-viewers-hour', 'twitch-viewers-day', 'twitch-viewers-week', 'twitch-viewers-month', 'twitch-chat-hour', 'twitch-chat-day', 'twitch-chat-week', 'twitch-chat-month', 'twitch-followers', 'twitch-views-video', 'twitch-views-clip', 'twitch-prime', 'kick-viewers-hour', 'kick-viewers-day', 'kick-viewers-week', 'kick-viewers-month', 'kick-chat-hour', 'kick-chat-day', 'kick-chat-week', 'kick-chat-month', 'kick-followers', 'kick-views-video', 'kick-views-clip', 'youtube-viewers-hour', 'youtube-followers', 'youtube-views', 'youtube-likes'));--> statement-breakpoint
+ALTER TABLE "launch_order" ADD CONSTRAINT "launch_order_amount" CHECK ("launch_order"."amount_cents" > 0 or ("launch_order"."amount_cents" = 0 and "launch_order"."service" = 'twitch-viewers-test'));

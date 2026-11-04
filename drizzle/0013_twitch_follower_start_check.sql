@@ -1,0 +1,2 @@
+ALTER TABLE "launch_order" ADD COLUMN "follower_start_check_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "launch_order_follower_start_check_idx" ON "launch_order" USING btree ("follower_start_check_at") WHERE "launch_order"."follower_start_check_at" is not null;

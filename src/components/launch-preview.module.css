@@ -1,0 +1,2 @@
+.preview { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius-control); color: var(--color-text-secondary); background: var(--color-muted); }
+.preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

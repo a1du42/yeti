@@ -15,6 +15,90 @@
       "when": 1793650676447,
       "tag": "0001_worried_nuke",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793783242958,
+      "tag": "0002_charming_rafael_vega",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793786220380,
+      "tag": "0003_broken_red_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793788756471,
+      "tag": "0004_clammy_wallop",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793800799209,
+      "tag": "0005_chilly_wilson_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793803910745,
+      "tag": "0006_launch_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793804704497,
+      "tag": "0007_streamskill_orders",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793805425467,
+      "tag": "0008_true_kat_farrell",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793805976696,
+      "tag": "0009_admin_pricing",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793806803472,
+      "tag": "0010_admin_user_management",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793807676836,
+      "tag": "0011_twitch_follower_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793808443776,
+      "tag": "0012_twitch_follower_estimate",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793811812574,
+      "tag": "0013_twitch_follower_start_check",
+      "breakpoints": true
     }
   ]
 }

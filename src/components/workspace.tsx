@@ -7,7 +7,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as Popover from "@radix-ui/react-popover";
 import * as Tabs from "@radix-ui/react-tabs";
 import {
-  ArrowLeft, CaretUpDown, CheckCircle, Flask, Gear,
+  ArrowLeft, CaretUpDown, CheckCircle, Gear, ListChecks,
   List, Plus, SignOut, RocketLaunch, Wallet, WarningCircle, X,
 } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
@@ -16,8 +16,10 @@ import { timezoneLabel, timezoneOptions as getTimezoneOptions } from "@/lib/time
 import { focusPopupOnOpen, IconTooltip, Logo, ThemeChoices } from "@/components/ui";
 import { GoogleAccess } from "@/components/google-access";
 import { LaunchPanel } from "@/components/launch-panel";
+import { LaunchHistory, type ConfirmedLaunch } from "@/components/launch-history";
 import { PaymentPanel } from "@/components/payment-panel";
 import { TEMPORARY_BALANCE_LABEL } from "@/components/balance-display";
+import { formatUsd } from "@/lib/money";
 import styles from "./workspace.module.css";
 
 export type CurrentUser = {
@@ -32,7 +34,7 @@ export type CurrentUser = {
 type View = "one" | "two" | "settings" | "payment";
 const views: View[] = ["one", "two", "settings", "payment"];
 const labels: Record<View, string> = {
-  one: "Запустить", two: "Тестовая 2", settings: "Настройки", payment: "Оплата",
+  one: "Запустить", two: "Мои запуски", settings: "Настройки", payment: "Оплата",
 };
 function readView(value: string | null): View {
   return views.includes(value as View) ? value as View : "one";
@@ -50,15 +52,30 @@ function formatCreatedAt(value: string, timezone: string) {
   } catch { return "Не удалось отобразить дату"; }
 }
 
-export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { user: CurrentUser; providers: string[]; googleEnabled: boolean; yandexEnabled: boolean }) {
+export function Workspace({ user, providers, googleEnabled, yandexEnabled, liveOrdering }: { user: CurrentUser; providers: string[]; googleEnabled: boolean; yandexEnabled: boolean; liveOrdering: boolean }) {
   const [pointerFocus, setPointerFocus] = useState(false);
   const session = authClient.useSession();
   const router = useRouter();
   const params = useSearchParams();
   const urlView = readView(params.get("tab"));
   const [view, setView] = useState<View>(urlView);
+  const [confirmedLaunch, setConfirmedLaunch] = useState<ConfirmedLaunch | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
+  const balanceLabel = liveOrdering ? balance === null ? "—" : formatUsd(balance) : TEMPORARY_BALANCE_LABEL;
+  useEffect(() => {
+    if (!liveOrdering) return;
+    const controller = new AbortController();
+    void fetch("/api/payments", { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8_000)]) })
+      .then(async response => {
+        if (!response.ok) return;
+        const { balanceCents } = await response.json();
+        if (!controller.signal.aborted && Number.isSafeInteger(balanceCents)) setBalance(balanceCents);
+      }).catch(() => {});
+    return () => controller.abort();
+  }, [liveOrdering, confirmedLaunch, view]);
   const [profile, setProfile] = useState(user);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [tabletLayout, setTabletLayout] = useState(false);
   const [menuOpen, setMenuOpen] = useState<"sidebar" | "header" | "bottom" | null>(null);
   const [name, setName] = useState(user.name);
   const [timezone, setTimezone] = useState(user.timezone);
@@ -68,7 +85,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
   const [pending, setPending] = useState<"save" | "logout" | null>(null);
   const [toast, setToast] = useState("");
   const [toastWarning, setToastWarning] = useState(false);
-  const notifyPayment = useCallback((message: string, tone: "success" | "warning" = "success") => {
+  const notify = useCallback((message: string, tone: "success" | "warning" = "success") => {
     setToast(message);
     setToastWarning(tone === "warning");
   }, []);
@@ -79,6 +96,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
   const requestRef = useRef<AbortController | null>(null);
   const focusAfterNavigation = useRef(false);
   const skipMenuFocusRestore = useRef(false);
+  const skipDrawerFocusRestore = useRef(false);
   const isAccount = view === "settings" || view === "payment";
 
   useEffect(() => { setProfile(user); }, [user]);
@@ -107,10 +125,13 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
   useEffect(() => {
     const phone = window.matchMedia("(max-width: 767px)");
     const desktop = window.matchMedia("(min-width: 1024px)");
+    const updateLayout = () => setTabletLayout(!phone.matches && !desktop.matches);
     const closeNavigation = () => {
+      updateLayout();
       setDrawerOpen(false);
       setMenuOpen(null);
     };
+    updateLayout();
     phone.addEventListener("change", closeNavigation);
     desktop.addEventListener("change", closeNavigation);
     return () => {
@@ -123,6 +144,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
     setToast("");
     focusAfterNavigation.current = focusContent;
     if (menuOpen) skipMenuFocusRestore.current = true;
+    if (drawerOpen) skipDrawerFocusRestore.current = true;
     setView(next);
     setMenuOpen(null);
     setDrawerOpen(false);
@@ -217,7 +239,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
   const navigation = (onNavigate?: () => void) => (
     <nav className={styles.sectionNav} aria-label="Разделы приложения">
       {(["one", "two"] as const).map((item) => {
-        const Icon = item === "one" ? RocketLaunch : Flask;
+        const Icon = item === "one" ? RocketLaunch : ListChecks;
         return <Link href={`/app?tab=${item}`} key={item} className={styles.navLink}
           aria-current={view === item ? "page" : undefined}
           onClick={(event) => { handleLink(event, item); onNavigate?.(); }}>
@@ -300,13 +322,15 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
           <Dialog.Trigger asChild><button className={styles.menuButton} aria-label="Открыть меню разделов">
             <List size={24} weight="regular" aria-hidden="true" /><span>Меню</span>
           </button></Dialog.Trigger>
-          <Dialog.Portal>
+          {tabletLayout && <Dialog.Portal>
             <Dialog.Overlay className={styles.drawerOverlay} />
             <Dialog.Content className={styles.drawer} aria-describedby={undefined}
               tabIndex={-1} data-popup-focus onOpenAutoFocus={focusPopupOnOpen}
               onCloseAutoFocus={(event) => {
-                if (!window.matchMedia("(min-width: 768px) and (max-width: 1023px)").matches) {
+                const triggerVisible = window.matchMedia("(min-width: 768px) and (max-width: 1023px)").matches;
+                if (skipDrawerFocusRestore.current || !triggerVisible) {
                   event.preventDefault();
+                  skipDrawerFocusRestore.current = false;
                   heading.current?.focus({ preventScroll: true });
                 }
               }}>
@@ -321,14 +345,14 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
                 <Link href="/app?tab=payment" aria-current={view === "payment" ? "page" : undefined} onClick={(event) => handleLink(event, "payment")}><Wallet size={20} aria-hidden="true" />Оплата</Link>
               </div>
             </Dialog.Content>
-          </Dialog.Portal>
+          </Dialog.Portal>}
         </Dialog.Root>
         <Link href="/app" className={styles.mobileLogo} aria-label="YETI STREAM — личный кабинет"><span className={styles.fullLogo}><Logo /></span><span className={styles.compactLogo}><Logo mark /></span></Link>
         <span className={styles.headerCaption}>Личный кабинет</span>
       </div>
       <div className={styles.headerActions}>
         <div className={styles.headerBalance}>
-          <div className={styles.balanceText} aria-label={`Баланс: ${TEMPORARY_BALANCE_LABEL}`}><Wallet size={20} weight="regular" aria-hidden="true" /><strong>{TEMPORARY_BALANCE_LABEL}</strong></div>
+          <div className={styles.balanceText} aria-label={`Баланс: ${balanceLabel}`}><Wallet size={20} weight="regular" aria-hidden="true" /><strong>{balanceLabel}</strong></div>
           <IconTooltip label="Пополнить баланс">
             <Link href="/app?tab=payment" className={styles.topUpLink} aria-label="Пополнить баланс" onClick={(event) => handleLink(event, "payment")}>
               <Plus size={20} weight="regular" aria-hidden="true" />
@@ -341,9 +365,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
 
     <main className={styles.main} id="workspace-main" tabIndex={-1}>
       <div className={styles.pageIntro}>
-        <div className={styles.eyebrow}>YETI STREAM</div>
         <h1 tabIndex={-1} ref={heading}>{labels[view]}</h1>
-        <p>{isAccount ? "Данные профиля и доступные действия." : `Здравствуйте, ${profile.name}.`}</p>
       </div>
 
       <Tabs.Root value={view} onValueChange={(next) => navigate(next as View, false)}>
@@ -353,17 +375,30 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
         </Tabs.List>}
         <div className={styles.panels}>
           <section className={styles.panel} aria-label={labels.one} data-visible={view === "one"} inert={view !== "one"} aria-hidden={view !== "one"}>
-            <LaunchPanel active={view === "one"} />
+            <LaunchPanel key={user.id} userId={user.id} active={view === "one"} onLaunch={(result) => {
+              setConfirmedLaunch(result);
+              if (readView(new URLSearchParams(window.location.search).get("tab")) === "one") {
+                if (result.autoStart) {
+                  navigate("two");
+                  window.scrollTo({ top: 0, behavior: "instant" });
+                  return;
+                }
+                heading.current?.focus({ preventScroll: true });
+                window.scrollTo({ top: 0, behavior: "instant" });
+              }
+              const status = result.order.providerStatus;
+              if (status === "unknown" || status === "submitting") notify("Статус заказа пока не подтверждён", "warning");
+              else if (status === "rejected" || status === "failed") notify("Не удалось запустить заказ", "warning");
+              else notify(status ? "Заказ создан" : "Демозапуск создан");
+            }} />
           </section>
-          <section className={styles.panel} aria-label={labels.two} data-visible={view === "two"} inert={view !== "two"} aria-hidden={view !== "two"}>
-            <div className={styles.emptyState}>
-              <Flask size={40} weight="regular" aria-hidden="true" className={styles.emptyIcon} />
-              <h2>Второй тестовый раздел</h2>
-              <p>Здесь пока нет данных. Раздел помогает проверить навигацию, оформление и работу кабинета на разных экранах.</p>
+          <section className={`${styles.panel} ${styles.historyPanel}`} aria-label={labels.two} data-visible={view === "two"} inert={view !== "two"} aria-hidden={view !== "two"}>
+            <LaunchHistory key={`${user.id}:${confirmedLaunch?.order.id ?? ""}`} active={view === "two"} confirmed={confirmedLaunch}
+              onSettingsSaved={message => notify(message)} startLink={
               <Link href="/app?tab=one" className={styles.secondaryButton} onClick={(event) => handleLink(event, "one")}>
                 <ArrowLeft size={20} weight="regular" aria-hidden="true" />К запуску
               </Link>
-            </div>
+            } />
           </section>
 
           <Tabs.Content className={styles.panel} value="settings" forceMount data-visible={view === "settings"} inert={view !== "settings"} aria-hidden={view !== "settings"}>
@@ -411,7 +446,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
             </section>
           </Tabs.Content>
           <Tabs.Content className={styles.panel} value="payment" forceMount data-visible={view === "payment"} inert={view !== "payment"} aria-hidden={view !== "payment"}>
-            <PaymentPanel active={view === "payment"} onNotify={notifyPayment} />
+            <PaymentPanel active={view === "payment"} onNotify={notify} liveOrdering={liveOrdering} />
           </Tabs.Content>
         </div>
       </Tabs.Root>
@@ -422,7 +457,7 @@ export function Workspace({ user, providers, googleEnabled, yandexEnabled }: { u
         <RocketLaunch size={22} weight="regular" aria-hidden="true" /><span>Запустить</span>
       </Link>
       <Link href="/app?tab=two" aria-current={view === "two" ? "page" : undefined} onClick={(event) => handleLink(event, "two")}>
-        <Flask size={22} weight="regular" aria-hidden="true" /><span>Тестовая 2</span>
+        <ListChecks size={22} weight="regular" aria-hidden="true" /><span>{labels.two}</span>
       </Link>
       {accountMenu("bottom")}
     </nav>

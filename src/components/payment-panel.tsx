@@ -21,7 +21,7 @@ function Status({ value }: { value: string }) {
   return <span className={styles.status} data-state={Icon === CheckCircle ? "success" : "pending"}><Icon size={18} weight="regular" aria-hidden="true" />{statuses[value] ?? "Требует проверки"}</span>;
 }
 
-export function PaymentPanel({ active, onNotify }: { active: boolean; onNotify: (message: string, tone?: "success" | "warning") => void }) {
+export function PaymentPanel({ active, onNotify, liveOrdering }: { active: boolean; liveOrdering: boolean; onNotify: (message: string, tone?: "success" | "warning") => void }) {
   const [data, setData] = useState<Overview | null>(null);
   const [amount, setAmount] = useState("10");
   const [fieldError, setFieldError] = useState("");
@@ -131,8 +131,8 @@ export function PaymentPanel({ active, onNotify }: { active: boolean; onNotify: 
     <div className={styles.layout}>
       <section className={styles.balance} aria-labelledby="payment-balance">
         <div className={styles.balanceHeading}><h2 id="payment-balance">Баланс</h2><Wallet size={24} weight="regular" aria-hidden="true" /></div>
-        <p className={styles.balanceValue}>{TEMPORARY_BALANCE_LABEL}</p>
-        <p className={styles.small}>Временное значение для отображения</p>
+        <p className={styles.balanceValue}>{liveOrdering ? data ? formatUsd(data.balanceCents) : "—" : TEMPORARY_BALANCE_LABEL}</p>
+        {!liveOrdering && <p className={styles.small}>Временное значение для отображения</p>}
         {updated && <p className={styles.small}>Обновлено в {updated}</p>}
       </section>
       <form className={styles.form} onSubmit={submit} noValidate aria-labelledby="payment-topup">

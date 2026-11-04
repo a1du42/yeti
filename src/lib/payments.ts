@@ -1,11 +1,12 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
-import { payment, paymentCredit } from "@/db/schema";
+import { payment, paymentCredit, user } from "@/db/schema";
 import { getDb } from "./db";
 import { getServerEnv } from "./env";
 import { checkoutUrl, heleketRequest, paymentSettings, type Invoice } from "./heleket";
 import { usdCents, usdDecimal } from "./money";
+import { spendableBalance } from "./streamskill-orders";
 
 export class PaymentError extends Error {
   constructor(message: string, public status = 400) { super(message); }
@@ -13,7 +14,7 @@ export class PaymentError extends Error {
 
 export async function paymentOverview(userId: string) {
   return getDb().transaction(async tx => {
-    const [totals] = await tx.select({ cents: sql<string>`coalesce(sum(${paymentCredit.amountCents}), 0)` }).from(paymentCredit).where(eq(paymentCredit.userId, userId));
+    const { rows: [totals] } = await tx.execute<{ cents: string }>(sql`select ${spendableBalance(userId)} as cents`);
     const history = await tx.select({
       id: payment.id, amountCents: payment.amountCents, status: payment.status,
       creditedAt: payment.creditedAt, createdAt: payment.createdAt, checkoutUrl: payment.checkoutUrl,
@@ -28,6 +29,8 @@ export async function reservePayment(userId: string, requestKey: string, amountC
   return getDb().transaction(async tx => {
     // Сериализация создания для аккаунта: разные вкладки не обходят лимит запросов.
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}))`);
+    const [owner] = await tx.select({ blocked: user.blocked }).from(user).where(eq(user.id, userId));
+    if (!owner || owner.blocked) throw new PaymentError("Войдите в аккаунт для оплаты.", 401);
     const [existing] = await tx.select().from(payment).where(and(eq(payment.userId, userId), eq(payment.requestKey, requestKey)));
     if (existing) {
       if (existing.amountCents !== amountCents) throw new PaymentError("Для другой суммы создайте новый счёт.", 409);

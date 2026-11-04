@@ -3,6 +3,7 @@ import { createHash, randomBytes, randomUUID, scrypt, timingSafeEqual } from "no
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import * as schema from "@/db/schema";
 import { getDb } from "@/lib/db";
@@ -84,6 +85,18 @@ function createAuth() {
     } : {},
     trustedOrigins: [new URL(env.BETTER_AUTH_URL).origin],
     database: drizzleAdapter(getDb(), { provider: "pg", schema, transaction: true }),
+    databaseHooks: {
+      session: {
+        create: {
+          async before(session) {
+            const [user] = await getDb().select({ blocked: schema.user.blocked }).from(schema.user)
+              .where(eq(schema.user.id, session.userId));
+            // OAuth may create the user and session in the same uncommitted transaction.
+            if (user?.blocked) throw new APIError("FORBIDDEN", { code: "ACCOUNT_BLOCKED", message: "Аккаунт заблокирован." });
+          },
+        },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
