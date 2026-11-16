@@ -10,17 +10,17 @@ import { canChangeDemoRegion, canPauseDemoLaunch, finishedProviderStatuses, foll
 import { launchHoursMax, launchQuantityMax, launchQuote, matchesLaunchTarget, liveOrderQuantityMax } from "@/lib/launch-catalog";
 import { changeStreamSkillFollowers, commandStreamSkillPurchase, readLaunchCatalog, readStreamSkillPurchase, streamSkillLiveEnabled } from "@/lib/streamskill";
 import { readPricing } from "@/lib/pricing";
-import { refreshProviderOrders, reserveAndSendLaunch } from "@/lib/streamskill-orders";
+import { checkPendingFollowerStarts, refreshProviderOrders, reserveAndSendLaunch } from "@/lib/streamskill-orders";
 import { readLaunchSource } from "@/lib/launch-source";
 import { readLaunchThumbnail } from "@/lib/launch-recent";
 import { isTwitchViewerPackage, twitchViewerSettings, viewerChatSettings, viewerSettingsError } from "@/lib/twitch-viewer-settings";
-import { changeStreamSkillViewerChat, changeStreamSkillViewers, readStreamSkillViewerChat } from "@/lib/streamskill";
+import { changeStreamSkillViewerChat, changeStreamSkillViewers, readStreamSkillViewerChat, readStreamSkillViewerSettings } from "@/lib/streamskill";
 
 export const runtime = "nodejs";
 const pageSize = 24;
 const json = (value: unknown, status = 200) => NextResponse.json(value, { status, headers: { "Cache-Control": "private, no-store" } });
 const fail = (error: string, status: number) => json({ error }, status);
-const intervalInput = z.number().int().min(followerInterval.min).max(followerInterval.max).multipleOf(followerInterval.step);
+const intervalInput = z.number().int().min(followerInterval.min).max(followerInterval.max);
 const launchInput = z.object({
   requestKey: z.uuid(),
   launchToken: z.string().min(1).max(12_288),
@@ -37,8 +37,8 @@ async function verifiedUser(request: Request) {
   return session?.user.emailVerified ? session.user.id : null;
 }
 
-function serialize({ id, service, platform, kind, url, title, thumbnail, quantity, hours, amountCents, createdAt, endsAt, pausedAt, region, providerStatus, followerIntervalSeconds, followerFloatingInterval, followerEstimate }: typeof launchOrder.$inferSelect): LaunchOrder {
-  return { id, service, platform, kind, url, title, thumbnail: readLaunchThumbnail(thumbnail), quantity, hours, amountCents, createdAt: createdAt.toISOString(), endsAt: endsAt.toISOString(), pausedAt: pausedAt?.toISOString() ?? null, region, providerStatus, followerIntervalSeconds, followerFloatingInterval, followerEstimate };
+function serialize({ id, service, platform, kind, url, title, thumbnail, quantity, hours, amountCents, createdAt, endsAt, pausedAt, region, providerStatus, followerIntervalSeconds, followerFloatingInterval, followerEstimate, followerStartCheckAt }: typeof launchOrder.$inferSelect): LaunchOrder {
+  return { id, service, platform, kind, url, title, thumbnail: readLaunchThumbnail(thumbnail), quantity, hours, amountCents, createdAt: createdAt.toISOString(), endsAt: endsAt.toISOString(), pausedAt: pausedAt?.toISOString() ?? null, region, providerStatus, followerIntervalSeconds, followerFloatingInterval, followerEstimate, followerPreparing: followerStartCheckAt !== null };
 }
 
 export async function GET(request: Request) {
@@ -48,23 +48,34 @@ export async function GET(request: Request) {
     const db = getDb();
     const params = new URL(request.url).searchParams;
     const chatOrderId = params.get("chatOrder");
-    if (chatOrderId !== null) {
-      if (!z.uuid().safeParse(chatOrderId).success) return fail("Некорректный запрос.", 400);
+    const settingsOrderId = chatOrderId ?? params.get("viewerOrder");
+    if (settingsOrderId !== null) {
+      if (!z.uuid().safeParse(settingsOrderId).success) return fail("Некорректный запрос.", 400);
       const [order] = await db.select().from(launchOrder)
-        .where(and(eq(launchOrder.id, chatOrderId), eq(launchOrder.userId, userId))).limit(1);
+        .where(and(eq(launchOrder.id, settingsOrderId), eq(launchOrder.userId, userId))).limit(1);
       if (!order) return fail("Запуск не найден.", 404);
       if (!streamSkillLiveEnabled() || !order.providerId || !isTwitchViewerPackage(order.service) ||
-        !followerControl(order.providerStatus) || order.providerStatus === "stopped") {
-        return json({ started: null });
+        !followerControl(order.providerStatus)) {
+        return chatOrderId === null ? fail("Настройки зрителей недоступны.", 409) : json({ started: null });
       }
+      if (chatOrderId === null) return json({ viewers: await readStreamSkillViewerSettings(order.providerId) });
+      if (order.providerStatus === "stopped") return json({ started: null });
       const chat = await readStreamSkillViewerChat(order.providerId);
-      return json({ started: chat?.started ?? null });
+      return json({
+        started: chat?.started ?? null,
+        messages: chat?.messages ?? null,
+        interval: chat?.interval,
+        mode: chat?.mode === "random" ? 0 : chat?.mode === "sequential" ? 1 : undefined,
+      });
     }
     const cursorId = params.get("before");
     const status = z.enum(launchStatuses).nullable().safeParse(params.get("status"));
     if (!status.success) return fail("Не удалось открыть этот список запусков.", 400);
     if (cursorId && !z.uuid().safeParse(cursorId).success) return fail("Не удалось открыть эту страницу запусков.", 400);
-    await refreshProviderOrders(userId);
+    await Promise.all([
+      refreshProviderOrders(userId),
+      streamSkillLiveEnabled() ? checkPendingFollowerStarts(userId).catch(() => console.warn("streamskill_follower_check_failed")) : undefined,
+    ]);
     const [cursor] = cursorId ? await db.select({ createdAt: launchOrder.createdAt }).from(launchOrder)
       .where(and(eq(launchOrder.userId, userId), eq(launchOrder.id, cursorId))).limit(1) : [];
     if (cursorId && !cursor) return fail("Не удалось открыть эту страницу запусков.", 400);
@@ -220,13 +231,19 @@ export async function PATCH(request: Request) {
         }
         if ("viewerAction" in input) {
           const outcome = await commandStreamSkillPurchase(order.providerId, input.viewerAction).catch(() => "unknown" as const);
+          const acknowledgedAt = Date.now();
           const snapshot = await readStreamSkillPurchase(order.providerId).catch(() => null);
-          if (snapshot && snapshot.status !== order.providerStatus) {
+          const stopped = input.viewerAction === "stop" && outcome === "accepted" &&
+            (!snapshot || followerControl(snapshot.status) === "stop");
+          // A successful stop freezes the timer even when the first read still shows the old status.
+          const status = stopped ? "stopped" : snapshot?.status;
+          if (status && status !== order.providerStatus) {
+            const clockAt = input.viewerAction === "stop" && outcome === "accepted" ? acknowledgedAt : Date.now();
             const [updated] = await tx.update(launchOrder).set({
-              providerStatus: snapshot.status,
-              ...nextTimedOrderClock(order, snapshot.status, Date.now()),
+              providerStatus: status,
+              ...nextTimedOrderClock(order, status, clockAt),
             }).where(ownOrder).returning();
-            if (followerControl(snapshot.status) !== action) return json({ order: serialize(updated), now: Date.now() });
+            if (followerControl(status) !== action) return json({ order: serialize(updated), now: Date.now() });
           }
           return outcome === "rejected" ? fail("Команда недоступна. Проверьте статус заказа.", 409)
             : fail("Новый статус пока не подтверждён. Обновите список запусков перед повтором.", 503);
@@ -236,11 +253,18 @@ export async function PATCH(request: Request) {
         if (!await changeStreamSkillViewers(order.providerId, input.viewers)) {
           return fail("Не удалось применить настройки. Проверьте параметры и статус заказа.", 409);
         }
-        const channel = input.viewers.channel;
-        if (!channel) return json({ order: serialize(order), now: Date.now() });
-        const url = `https://www.twitch.tv/${channel.toLowerCase()}`;
+        const { channel, stream_views, uniq_viewers } = input.viewers;
+        const url = channel ? `https://www.twitch.tv/${channel.toLowerCase()}` : order.url;
         const [updated] = url === order.url ? [order] : await tx.update(launchOrder)
           .set({ url, title: null, thumbnail: null }).where(ownOrder).returning();
+        if (stream_views !== undefined || uniq_viewers !== undefined) {
+          const current = await readStreamSkillViewerSettings(order.providerId).catch(() => null);
+          if (!current ||
+            (stream_views !== undefined && Number(current.stream_views) !== stream_views) ||
+            (uniq_viewers !== undefined && Number(current.uniq_viewers) !== uniq_viewers)) {
+            return fail("Не удалось подтвердить сохранение множителей. Откройте настройки заново, чтобы проверить текущие значения.", 503);
+          }
+        }
         return json({ order: serialize(updated), now: Date.now() });
       }
       if ("followerAction" in input || "interval" in input) {
@@ -272,7 +296,7 @@ export async function PATCH(request: Request) {
         }
         const [updated] = await tx.update(launchOrder).set({
           followerIntervalSeconds: input.interval, followerFloatingInterval: input.floating,
-          followerEstimate: nextFollowerEstimate(order, order.providerStatus, Date.now(), input.interval),
+          followerEstimate: nextFollowerEstimate(order, order.followerStartCheckAt ? null : order.providerStatus, Date.now(), input.interval),
         }).where(ownOrder).returning();
         return json({ order: serialize(updated), now: Date.now() });
       }

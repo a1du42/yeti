@@ -1,0 +1,378 @@
+auth_event { level: 'error' }
+⨯ [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: { message: 'Failed to get session', code: 'FAILED_TO_GET_SESSION' },
+  headers: {},
+  statusCode: 500,
+  digest: '3914836991',
+  [cause]: Error: Failed query: select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1
+  params: VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7
+      at async AuthPage (src\app\app\auth\page.tsx:14:19)
+    12 |   const params = await searchParams;
+    13 |   const reset = params.reset === "1";
+  > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+       |                   ^
+    15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+    16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+    17 |   const env = getServerEnv(); {
+    query: 'select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1',
+    params: [ 'VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7' ],
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:15434
+        at async AuthPage (src\app\app\auth\page.tsx:14:19)
+      12 |   const params = await searchParams;
+      13 |   const reset = params.reset === "1";
+    > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+         |                   ^
+      15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+      16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+      17 |   const env = getServerEnv(); {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15434
+    }
+  }
+}
+auth_event { level: 'error' }
+⨯ [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: { message: 'Failed to get session', code: 'FAILED_TO_GET_SESSION' },
+  headers: {},
+  statusCode: 500,
+  digest: '3914836991',
+  [cause]: Error: Failed query: select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1
+  params: VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7
+      at async AuthPage (src\app\app\auth\page.tsx:14:19)
+    12 |   const params = await searchParams;
+    13 |   const reset = params.reset === "1";
+  > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+       |                   ^
+    15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+    16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+    17 |   const env = getServerEnv(); {
+    query: 'select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1',
+    params: [ 'VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7' ],
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:15434
+        at async AuthPage (src\app\app\auth\page.tsx:14:19)
+      12 |   const params = await searchParams;
+      13 |   const reset = params.reset === "1";
+    > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+         |                   ^
+      15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+      16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+      17 |   const env = getServerEnv(); {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15434
+    }
+  }
+}
+auth_event { level: 'error' }
+⨯ [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: { message: 'Failed to get session', code: 'FAILED_TO_GET_SESSION' },
+  headers: {},
+  statusCode: 500,
+  digest: '3914836991',
+  [cause]: Error: Failed query: select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1
+  params: VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7
+      at async AuthPage (src\app\app\auth\page.tsx:14:19)
+    12 |   const params = await searchParams;
+    13 |   const reset = params.reset === "1";
+  > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+       |                   ^
+    15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+    16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+    17 |   const env = getServerEnv(); {
+    query: 'select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1',
+    params: [ 'VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7' ],
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:15434
+        at async AuthPage (src\app\app\auth\page.tsx:14:19)
+      12 |   const params = await searchParams;
+      13 |   const reset = params.reset === "1";
+    > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+         |                   ^
+      15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+      16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+      17 |   const env = getServerEnv(); {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15434
+    }
+  }
+}
+auth_event { level: 'error' }
+⨯ [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: { message: 'Failed to get session', code: 'FAILED_TO_GET_SESSION' },
+  headers: {},
+  statusCode: 500,
+  digest: '3914836991',
+  [cause]: Error: Failed query: select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1
+  params: VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7
+      at async AuthPage (src\app\app\auth\page.tsx:14:19)
+    12 |   const params = await searchParams;
+    13 |   const reset = params.reset === "1";
+  > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+       |                   ^
+    15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+    16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+    17 |   const env = getServerEnv(); {
+    query: 'select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1',
+    params: [ 'VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7' ],
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:15434
+        at async AuthPage (src\app\app\auth\page.tsx:14:19)
+      12 |   const params = await searchParams;
+      13 |   const reset = params.reset === "1";
+    > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+         |                   ^
+      15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+      16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+      17 |   const env = getServerEnv(); {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15434
+    }
+  }
+}
+[browser] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template). 
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+database_connection_error
+database_connection_error
+database_connection_error
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+[browser] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template). 
+[browser] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template). 
+[browser] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template). 
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+auth_event { level: 'error' }
+⨯ [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: { message: 'Failed to get session', code: 'FAILED_TO_GET_SESSION' },
+  headers: {},
+  statusCode: 500,
+  digest: '3914836991',
+  [cause]: Error: Failed query: select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1
+  params: VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7
+      at async AuthPage (src\app\app\auth\page.tsx:14:19)
+    12 |   const params = await searchParams;
+    13 |   const reset = params.reset === "1";
+  > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+       |                   ^
+    15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+    16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+    17 |   const env = getServerEnv(); {
+    query: 'select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1',
+    params: [ 'VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7' ],
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:15434
+        at async AuthPage (src\app\app\auth\page.tsx:14:19)
+      12 |   const params = await searchParams;
+      13 |   const reset = params.reset === "1";
+    > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+         |                   ^
+      15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+      16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+      17 |   const env = getServerEnv(); {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15434
+    }
+  }
+}
+[browser] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template). 
+auth_event { level: 'error' }
+⨯ [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: { message: 'Failed to get session', code: 'FAILED_TO_GET_SESSION' },
+  headers: {},
+  statusCode: 500,
+  digest: '3914836991',
+  [cause]: Error: Failed query: select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1
+  params: VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7
+      at async AuthPage (src\app\app\auth\page.tsx:14:19)
+    12 |   const params = await searchParams;
+    13 |   const reset = params.reset === "1";
+  > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+       |                   ^
+    15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+    16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+    17 |   const env = getServerEnv(); {
+    query: 'select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1',
+    params: [ 'VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7' ],
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:15434
+        at async AuthPage (src\app\app\auth\page.tsx:14:19)
+      12 |   const params = await searchParams;
+      13 |   const reset = params.reset === "1";
+    > 14 |   const session = await getAuth().api.getSession({ headers: await headers() });
+         |                   ^
+      15 |   if (session?.user.emailVerified && !reset) redirect("/app");
+      16 |   const verified = (await cookies()).get("yeti-verified")?.value === "1";
+      17 |   const env = getServerEnv(); {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15434
+    }
+  }
+}
+[browser] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template). 
+auth_event { level: 'error' }
+⨯ [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: { message: 'Failed to get session', code: 'FAILED_TO_GET_SESSION' },
+  headers: {},
+  statusCode: 500,
+  digest: '3914836991',
+  [cause]: Error: Failed query: select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1
+  params: VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7
+      at async AppPage (src\app\app\page.tsx:15:19)
+    13 |
+    14 | export default async function AppPage() {
+  > 15 |   const session = await getAuth().api.getSession({ headers: await headers() });
+       |                   ^
+    16 |   if (!session || !session.user.emailVerified) redirect("/app/auth");
+    17 |   const { id, name, email, emailVerified, timezone, createdAt } = session.user;
+    18 |   const accounts = await getDb().select({ provider: account.providerId }).from(account).where(eq(account.userId, id)); {
+    query: 'select "id", "expires_at", "token", "created_at", "updated_at", "ip_address", "user_agent", "user_id" from "session" where "session"."token" = $1',
+    params: [ 'VLHJuAVF74kFeFB7wQKIkv5NNZa5JkG7' ],
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:15434
+        at async AppPage (src\app\app\page.tsx:15:19)
+      13 |
+      14 | export default async function AppPage() {
+    > 15 |   const session = await getAuth().api.getSession({ headers: await headers() });
+         |                   ^
+      16 |   if (!session || !session.user.emailVerified) redirect("/app/auth");
+      17 |   const { id, name, email, emailVerified, timezone, createdAt } = session.user;
+      18 |   const accounts = await getDb().select({ provider: account.providerId }).from(account).where(eq(account.userId, id)); {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15434
+    }
+  }
+}
+[browser] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template). 
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed
+streamskill_follower_worker_failed

@@ -7,7 +7,7 @@ import { CaretRight, ChatDots, DotsThree, Globe, Info, Pause, Play, SlidersHoriz
 import { canChangeDemoRegion, canPauseDemoLaunch, followerControl, isFollowerInterval, launchRegionNames, launchRegions, type LaunchChange, type LaunchOrder, type LaunchRegion } from "@/lib/launch-orders";
 import { FollowerInterval } from "./follower-interval";
 import { isTwitchViewerPackage, viewerSettingsError } from "@/lib/twitch-viewer-settings";
-import { readViewerChatFields, readViewerFields, TwitchViewerFields, ViewerChatFields } from "./twitch-viewer-fields";
+import { readViewerChatFields, readViewerFields, TwitchViewerFields, ViewerChatFields, type ChatFieldsSnapshot, type ViewerFieldsSnapshot } from "./twitch-viewer-fields";
 import { focusPopupOnOpen } from "./ui";
 import workspace from "./workspace.module.css";
 import styles from "./launch-actions.module.css";
@@ -21,7 +21,10 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
   const [regionOpen, setRegionOpen] = useState(false);
   const [chat, setChat] = useState(false);
   const [chatStatus, setChatStatus] = useState<"loading" | "running" | "stopped" | "unavailable" | "error">("loading");
-  const [chatRead, setChatRead] = useState(0);
+  const [settingsRead, setSettingsRead] = useState(0);
+  const [chatFields, setChatFields] = useState<ChatFieldsSnapshot | null>(null);
+  const [viewerFields, setViewerFields] = useState<ViewerFieldsSnapshot | null>(null);
+  const [viewerReadFailed, setViewerReadFailed] = useState(false);
   const [region, setRegion] = useState(order.region);
   const [interval, setIntervalValue] = useState("");
   const [floating, setFloating] = useState(false);
@@ -29,6 +32,7 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
   const pending = pendingChange !== null;
   const pendingChatAction = pendingChange && "viewerChatAction" in pendingChange ? pendingChange.viewerChatAction : undefined;
   const [error, setError] = useState("");
+  const [chatUnchanged, setChatUnchanged] = useState(false);
   const request = useRef<AbortController | null>(null);
   const more = useRef<HTMLButtonElement>(null);
   const regionButton = useRef<HTMLButtonElement>(null);
@@ -53,9 +57,11 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
   const SettingsIcon = viewerControl ? SlidersHorizontal : followerAction ? Timer : Globe;
   const liveAction = followerAction ?? viewerAction;
   const actionLabel = liveAction === "start" ? "Запустить" : liveAction === "stop" ? "Остановить" : pauseLabel;
+  const actionTone = (liveAction ? liveAction === "start" : paused) ? "start" : "pause";
   const ActionIcon = liveAction ? (liveAction === "start" ? Play : Pause) : PauseIcon;
   const actionChange: LaunchChange = viewerAction ? { viewerAction } : followerAction ? { followerAction } : { paused: !paused };
   const validInterval = isFollowerInterval(Number(interval));
+  const settingsBlocked = viewerControl !== null && (chat ? !chatFields || chatStatus === "loading" : !viewerFields);
 
   useEffect(() => {
     const media = window.matchMedia(mobile);
@@ -69,34 +75,53 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
   }, []);
 
   useEffect(() => {
-    if (!regionOpen || !chat) return;
-    if (!canManageChat) {
+    if (!regionOpen || !viewerControl) return;
+    if (chat && !canManageChat) {
       setRegionOpen(false);
       return;
     }
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 8_000);
     let current = true;
-    async function readChat() {
+    async function readSettings() {
       try {
-        const params = new URLSearchParams({ chatOrder: order.id });
+        const params = new URLSearchParams({ [chat ? "chatOrder" : "viewerOrder"]: order.id });
         const response = await fetch(`/api/launches?${params}`, { signal: controller.signal, cache: "no-store" });
         if (!response.ok) throw new Error();
-        const { started } = await response.json();
-        if (current) setChatStatus(started === true ? "running" : started === false ? "stopped" : started === null ? "unavailable" : "error");
+        const data = await response.json();
+        if (!current) return;
+        if (chat) {
+          const { started, interval, mode, messages } = data;
+          if (typeof started === "boolean") {
+            setChatStatus(started ? "running" : "stopped");
+            // A status retry during editing keeps the original form baseline and the draft.
+            setChatFields(previous => previous ?? {
+              interval, mode, messages: Array.isArray(messages) ? messages.join("\n").replace(/\r\n?/g, "\n") : null,
+            });
+          } else {
+            setChatFields(null);
+            setChatStatus(started === null ? "unavailable" : "error");
+          }
+        } else {
+          if (!data.viewers || typeof data.viewers !== "object") throw new Error();
+          setViewerFields(data.viewers);
+        }
       } catch {
-        if (current) setChatStatus("error");
+        if (current) {
+          if (chat) setChatStatus("error");
+          else setViewerReadFailed(true);
+        }
       } finally {
         window.clearTimeout(timeout);
       }
     }
-    void readChat();
+    void readSettings();
     return () => {
       current = false;
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [regionOpen, chat, canManageChat, order.id, chatRead]);
+  }, [regionOpen, chat, canManageChat, viewerControl, order.id, settingsRead]);
 
   async function save(change: LaunchChange) {
     if (request.current) return;
@@ -106,6 +131,7 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
     const timeout = window.setTimeout(() => controller.abort(), "viewerChatAction" in change ? 18_000 : 12_000);
     setPendingChange(change);
     setError("");
+    setChatUnchanged(false);
     try {
       const response = await fetch("/api/launches", {
         method: "PATCH", headers: { "Content-Type": "application/json" }, signal: controller.signal,
@@ -143,11 +169,15 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
 
   function openSettings(forChat = false) {
     if (request.current) return;
+    setChatUnchanged(false);
     openingRegion.current = menu;
     setMenu(false);
     setError("");
     setChat(forChat);
     setChatStatus("loading");
+    setChatFields(null);
+    setViewerFields(null);
+    setViewerReadFailed(false);
     setRegion(order.region);
     setIntervalValue(order.followerIntervalSeconds?.toString() ?? "");
     setFloating(order.followerFloatingInterval ?? false);
@@ -168,7 +198,7 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
         <span className={styles.actionIcon}><ChatDots size={20} weight="regular" aria-hidden="true" /></span>
         <span>{chatLabel}</span><CaretRight className={styles.actionArrow} size={16} weight="regular" aria-hidden="true" />
       </button>}
-      {(canPause || liveAction) && <button type="button" className={styles.actionButton} aria-disabled={pending} onClick={() => void save(actionChange)}>
+      {(canPause || liveAction) && <button type="button" className={styles.actionButton} data-launch-tone={actionTone} aria-disabled={pending} onClick={() => void save(actionChange)}>
         <span className={styles.actionIcon}><ActionIcon size={20} weight="regular" aria-hidden="true" /></span><span>{actionLabel}</span>
       </button>}
     </div>
@@ -198,7 +228,7 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
               if (openingRegion.current || !window.matchMedia(mobile).matches) event.preventDefault();
               openingRegion.current = false;
             }}>
-            {(canPause || liveAction) && <button type="button" className={styles.actionButton} disabled={pending} onClick={() => {
+            {(canPause || liveAction) && <button type="button" className={styles.actionButton} data-launch-tone={actionTone} disabled={pending} onClick={() => {
               setMenu(false);
               void save(actionChange);
             }}><span className={styles.actionIcon}><ActionIcon size={20} weight="regular" aria-hidden="true" /></span>{actionLabel}</button>}
@@ -227,7 +257,7 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
               {chat ? chatLabel : settingsLabel}
             </Dialog.Title>
             <Dialog.Description className={styles.settingsIntro}>
-              <span>Заполните только поля, которые хотите изменить.</span>
+              <span>Измените нужные поля и сохраните настройки.</span>
               <span className={styles.priceNote}><Info size={18} weight="regular" aria-hidden="true" />Стоимость заказа не изменится.</span>
             </Dialog.Description>
           </header> : <>
@@ -235,17 +265,33 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
             <Dialog.Description>{followerAction ? "Изменение темпа не меняет количество и стоимость заказа." : "Регион сохраняется для этого демозапуска."}</Dialog.Description>
           </>}
           <form className={viewerControl ? styles.settingsForm : undefined} aria-busy={pending}
-            noValidate onChange={viewerControl ? () => setError("") : undefined} onSubmit={event => {
+            noValidate onChange={viewerControl ? () => { setError(""); setChatUnchanged(false); } : undefined} onSubmit={event => {
             event.preventDefault();
-            if (pending) return;
-            if (!event.currentTarget.reportValidity()) return;
+            if (pending || settingsBlocked) return;
+            if ((!viewerControl || chat) && !event.currentTarget.reportValidity()) return;
+            // Existing provider values can exceed today's edit limits.
+            if (viewerControl && !chat) {
+              const invalidNumber = Array.from(event.currentTarget.querySelectorAll<HTMLInputElement>("input[type=number]:invalid"))
+                .find(input => input.validity.badInput);
+              if (invalidNumber) {
+                if (invalidNumber.closest("[inert]")) setError("Проверьте числовые значения на всех вкладках.");
+                else invalidNumber.reportValidity();
+                return;
+              }
+            }
             if (viewerControl && chat) {
-              const settings = readViewerChatFields(event.currentTarget);
-              if (!settings) setError("Укажите изменение. В списке может быть до 100 фраз, до 500 знаков в каждой.");
+              if (!chatFields) return;
+              const settings = readViewerChatFields(event.currentTarget, chatFields);
+              if (settings === undefined) {
+                setError("");
+                setChatUnchanged(true);
+              }
+              else if (!settings) setError("Проверьте настройки чата.");
               else void save({ viewerChat: settings });
             } else if (viewerControl) {
-              const settings = readViewerFields(event.currentTarget);
-              const message = settings ? viewerSettingsError(settings, order.quantity) : "Проверьте имя канала, целые числа и формат графика.";
+              if (!viewerFields) return;
+              const settings = readViewerFields(event.currentTarget, viewerFields);
+              const message = settings ? viewerSettingsError(settings, order.quantity) : "Проверьте числовые значения и формат графика.";
               if (message) setError(message);
               else if (settings) void save({ viewers: settings });
             } else if (followerAction) {
@@ -254,10 +300,17 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
           }}>
             {viewerControl ? <div className={styles.settingsScroll}>
               {chat
-                ? <ViewerChatFields pending={pending} pendingAction={pendingChatAction} status={chatStatus}
-                  onRetry={() => { setError(""); setChatStatus("loading"); setChatRead(value => value + 1); }}
+                ? <ViewerChatFields pending={pending} pendingAction={pendingChatAction} status={chatStatus} current={chatFields}
+                  onRetry={() => { setError(""); setChatUnchanged(false); setChatStatus("loading"); setSettingsRead(value => value + 1); }}
                   onAction={viewerChatAction => void save({ viewerChatAction })} />
-                : <TwitchViewerFields pending={pending} quantity={order.quantity} />}
+                : viewerFields ? <TwitchViewerFields pending={pending} quantity={order.quantity} current={viewerFields} />
+                  : viewerReadFailed ? <div className={styles.viewerFields}>
+                    <p role="status">Не удалось загрузить настройки зрителей.</p>
+                    <button type="button" className={styles.actionButton} onClick={() => {
+                      setViewerReadFailed(false);
+                      setSettingsRead(value => value + 1);
+                    }}>Повторить загрузку</button>
+                  </div> : <p role="status">Загружаем настройки зрителей…</p>}
             </div> : followerAction ? <>
               <FollowerInterval value={interval} pending={pending} onChange={value => { setIntervalValue(value); setError(""); }} />
               <label className={styles.floatingInterval}>
@@ -275,9 +328,10 @@ export function LaunchActions({ order, onChange, onSettingsSaved }: {
             </select></>}
             <div className={viewerControl ? styles.settingsFooter : styles.inlineFooter}>
               {errorMessage}
+              {chat && chatUnchanged && <p className={styles.settingsNote} role="status">Настройки чата не изменились.</p>}
               <div className={styles.dialogButtons}>
                 <Dialog.Close asChild><button type="button" className={styles.actionButton}>{pending ? "Закрыть" : "Отмена"}</button></Dialog.Close>
-                <button type="submit" className={styles.actionButton} data-tone="primary" aria-disabled={pending || (!viewerControl && (followerAction ? !validInterval : region === order.region))}>
+                <button type="submit" className={styles.actionButton} data-tone="primary" aria-disabled={pending || settingsBlocked || (!viewerControl && (followerAction ? !validInterval : region === order.region))}>
                   {pending && !pendingChatAction ? "Сохраняем…" : "Сохранить"}
                 </button>
               </div>

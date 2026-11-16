@@ -116,6 +116,7 @@
   --dur-panel: 560ms;
   --dur-sheet: 640ms;
   --dur-max: 800ms;
+  --dur-launch-progress-sweep: 2400ms;
   --dur-reduced: 100ms;
   --delay-help-hover: 240ms;
   --delay-help-focus: 0ms;

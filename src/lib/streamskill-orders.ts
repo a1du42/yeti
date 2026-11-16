@@ -2,12 +2,12 @@ import "server-only";
 import { and, asc, desc, eq, inArray, isNotNull, isNull, lte, notInArray, sql } from "drizzle-orm";
 import { balanceAdjustment, launchOrder, paymentCredit, pricingSettings, user } from "@/db/schema";
 import { getDb } from "./db";
-import { followerControl, nextFollowerEstimate, nextTimedOrderClock } from "./launch-orders";
+import { finishedProviderStatuses, followerControl, nextFollowerEstimate, nextTimedOrderClock } from "./launch-orders";
 import { changeStreamSkillFollowers, commandStreamSkillPurchase, createStreamSkillPurchase, readStreamSkillPurchase, readStreamSkillPurchases } from "./streamskill";
 
 const released = ["rejected", "refunded"] as const;
-const followerStartDelayMs = 30_000;
-const followerStartGraceMs = 90_000;
+const followerStartDelayMs = 5_000;
+const followerStartGraceMs = 120_000;
 export const spendableBalance = (userId: string | ReturnType<typeof sql>) => sql<string>`
   (select coalesce(sum(${paymentCredit.amountCents}), 0) from ${paymentCredit} where ${paymentCredit.userId} = ${userId})
   +
@@ -51,21 +51,22 @@ export async function reserveAndSendLaunch(
   const state = outcome.result === "created"
     ? {
       providerId: outcome.purchase.id, providerStatus: outcome.purchase.status,
-      followerStartCheckAt: purchase.service.id === "twitch-followers"
+      ...nextTimedOrderClock({ ...intent.row, providerStatus: "submitting" }, outcome.purchase.status, Date.now()),
+      followerStartCheckAt: purchase.service.id === "twitch-followers" && !finishedProviderStatuses.includes(outcome.purchase.status)
         ? new Date(Date.now() + followerStartDelayMs) : null,
-      followerEstimate: nextFollowerEstimate(intent.row, outcome.purchase.status, Date.now(), undefined, outcome.purchase.progress),
+      followerEstimate: nextFollowerEstimate(intent.row, null, Date.now(), undefined, outcome.purchase.progress),
     }
     : { providerStatus: outcome.result };
   const [row] = await db.update(launchOrder).set(state)
     .where(and(request, eq(launchOrder.providerStatus, "submitting"))).returning();
-  if (row && outcome.result === "created" && floating !== undefined && purchase.interval !== undefined) {
+  if (row && outcome.result === "created" && purchase.service.id === "twitch-followers") {
     const { id } = outcome.purchase;
     const interval = purchase.interval;
     // Keep the confirmed purchase available for recovery even if a follow-up request fails.
     const updated = await db.transaction(async tx => {
       const [current] = await tx.select().from(launchOrder).where(request).for("update");
       if (!current?.followerStartCheckAt || !followerControl(current.providerStatus)) return current ?? row;
-      if (floating && !await changeStreamSkillFollowers(id, { interval, floating }).catch(() => false)) {
+      if (floating && interval !== undefined && !await changeStreamSkillFollowers(id, { interval, floating }).catch(() => false)) {
         const [saved] = await tx.update(launchOrder).set({ followerStartCheckAt: null }).where(request).returning();
         return saved;
       }
@@ -76,8 +77,9 @@ export async function reserveAndSendLaunch(
       const [saved] = await tx.update(launchOrder).set({
         followerFloatingInterval: floating,
         providerStatus: snapshot?.status ?? current.providerStatus,
+        ...(snapshot && finishedProviderStatuses.includes(snapshot.status) ? { followerStartCheckAt: null } : {}),
         followerEstimate: snapshot
-          ? nextFollowerEstimate(current, snapshot.status, Date.now(), interval, snapshot.progress)
+          ? nextFollowerEstimate(current, null, Date.now(), undefined, snapshot.progress)
           : current.followerEstimate,
       }).where(request).returning();
       return saved;
@@ -98,9 +100,10 @@ export function refreshProviderOrders(userId: string) {
   return task;
 }
 
-export async function checkPendingFollowerStarts() {
+export async function checkPendingFollowerStarts(userId?: string) {
   const db = getDb();
-  const due = lte(launchOrder.followerStartCheckAt, new Date());
+  const due = and(lte(launchOrder.followerStartCheckAt, new Date()),
+    userId ? eq(launchOrder.userId, userId) : undefined);
   const rows = await db.select({ id: launchOrder.id }).from(launchOrder).where(due)
     .orderBy(asc(launchOrder.followerStartCheckAt)).limit(4);
   const results = await Promise.allSettled(rows.map(({ id }) => db.transaction(async tx => {
@@ -109,19 +112,25 @@ export async function checkPendingFollowerStarts() {
     if (!order?.followerStartCheckAt || !order.providerId) return;
     const [owner] = await tx.select({ blocked: user.blocked }).from(user).where(eq(user.id, order.userId));
     if (!owner || owner.blocked || Date.now() - order.followerStartCheckAt.getTime() > followerStartGraceMs) {
-      await tx.update(launchOrder).set({ followerStartCheckAt: null }).where(orderKey);
+      await tx.update(launchOrder).set({
+        followerStartCheckAt: null,
+        followerEstimate: nextFollowerEstimate(order, order.providerStatus, Date.now()),
+      }).where(orderKey);
       return;
     }
     let snapshot = await readStreamSkillPurchase(order.providerId);
-    if (followerControl(snapshot.status) === "start") {
+    const retry = snapshot.status === "stopped";
+    if (retry) {
       const outcome = await commandStreamSkillPurchase(order.providerId, "start").catch(() => "unknown" as const);
       if (outcome !== "accepted") console.warn("streamskill_follower_start_unconfirmed", { id, outcome });
       snapshot = await readStreamSkillPurchase(order.providerId).catch(() => snapshot);
     }
+    const preparing = !retry && !finishedProviderStatuses.includes(snapshot.status);
+    if (preparing && snapshot.status === order.providerStatus && !snapshot.progress) return;
     await tx.update(launchOrder).set({
-      followerStartCheckAt: null,
+      followerStartCheckAt: preparing ? order.followerStartCheckAt : null,
       providerStatus: snapshot.status,
-      followerEstimate: nextFollowerEstimate(order, snapshot.status, Date.now(), undefined, snapshot.progress),
+      followerEstimate: nextFollowerEstimate(order, preparing ? null : snapshot.status, Date.now(), undefined, snapshot.progress),
     }).where(orderKey);
   })));
   if (results.some(result => result.status === "rejected")) console.warn("streamskill_follower_check_failed");
@@ -132,8 +141,8 @@ async function refreshOrders(userId: string) {
   const rows = await db.select({
     id: launchOrder.providerId, service: launchOrder.service, quantity: launchOrder.quantity,
     providerStatus: launchOrder.providerStatus, followerIntervalSeconds: launchOrder.followerIntervalSeconds,
-    followerEstimate: launchOrder.followerEstimate, hours: launchOrder.hours,
-    pausedAt: launchOrder.pausedAt, endsAt: launchOrder.endsAt,
+    followerEstimate: launchOrder.followerEstimate, followerStartCheckAt: launchOrder.followerStartCheckAt, hours: launchOrder.hours,
+    pausedAt: launchOrder.pausedAt, endsAt: launchOrder.endsAt, createdAt: launchOrder.createdAt,
   }).from(launchOrder)
     .where(and(eq(launchOrder.userId, userId), isNotNull(launchOrder.providerId), notInArray(launchOrder.providerStatus, ["refunded"])))
     .orderBy(desc(launchOrder.createdAt)).limit(100);
@@ -145,13 +154,14 @@ async function refreshOrders(userId: string) {
     for (const purchase of items) {
       const previous = snapshots.get(purchase.id);
       if (!previous?.providerStatus) continue;
-      const followerEstimate = nextFollowerEstimate(previous, purchase.status, now, undefined, purchase.progress);
+      const followerEstimate = nextFollowerEstimate(previous, previous.followerStartCheckAt ? null : purchase.status, now, undefined, purchase.progress);
       if (previous.providerStatus === purchase.status && previous.followerEstimate === followerEstimate) continue;
       // Discard a snapshot if a command or a settings edit changed the order while the lookup ran.
       await tx.update(launchOrder).set({ providerStatus: purchase.status, followerEstimate, ...nextTimedOrderClock(previous, purchase.status, now) })
         .where(and(eq(launchOrder.userId, userId), eq(launchOrder.providerId, purchase.id),
           eq(launchOrder.providerStatus, previous.providerStatus),
           eq(launchOrder.endsAt, previous.endsAt),
+          previous.followerStartCheckAt ? eq(launchOrder.followerStartCheckAt, previous.followerStartCheckAt) : isNull(launchOrder.followerStartCheckAt),
           previous.pausedAt ? eq(launchOrder.pausedAt, previous.pausedAt) : isNull(launchOrder.pausedAt),
           sql`${launchOrder.followerIntervalSeconds} is not distinct from ${previous.followerIntervalSeconds}::integer`,
           sql`${launchOrder.followerEstimate} is not distinct from ${previous.followerEstimate && JSON.stringify(previous.followerEstimate)}::jsonb`,

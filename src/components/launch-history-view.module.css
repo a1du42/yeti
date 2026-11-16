@@ -142,10 +142,11 @@
   transform-origin: left center;
 }
 .progressFill::before {
+  --progress-shine: color-mix(in oklab, var(--progress-end, var(--color-launch-progress-end)), var(--color-palette-white) 55%);
   content: "";
   position: absolute;
-  inset: 0 -50% 0 0;
-  background: linear-gradient(90deg, var(--progress-fill, var(--color-action)), var(--progress-end, var(--color-launch-progress-end)) 67%, var(--progress-fill, var(--color-action)));
+  inset: 0;
+  background: linear-gradient(90deg, transparent 22%, var(--progress-shine) 44%, var(--progress-shine) 56%, transparent 78%);
 }
 .progressTrack[data-paused] {
   --progress-fill: var(--color-launch-progress-paused);
@@ -155,13 +156,13 @@
   .progressTrack[data-estimate] .progressFill {
     transition: transform 500ms var(--ease-out);
   }
-  .progressTrack[data-running="true"] .progressFill::before {
-    animation: progressGradient var(--dur-max) var(--ease-in-out) infinite alternate;
+  .history:not([data-page-hidden]) .progressTrack[data-running="true"] .progressFill::before {
+    animation: progressGradient var(--dur-launch-progress-sweep, 2400ms) ease-in-out infinite alternate;
   }
 }
 @keyframes progressGradient {
-  from { transform: translateX(-33.333%); }
-  to { transform: translateX(0); }
+  from { transform: translateX(-50%); }
+  to { transform: translateX(50%); }
 }
 @media (forced-colors: active) {
   .progressTrack { background: Canvas; outline: 1px solid CanvasText; }

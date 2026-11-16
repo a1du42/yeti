@@ -102,7 +102,7 @@
               </div>
               <form id="payment-form" class="sample-panel payment-form" novalidate>
                 <h2>Пополнение баланса</h2><p class="secondary small">Посмотрите сумму до подтверждения.</p>
-                <div class="field"><label for="payment-amount">Сумма, USD <span class="secondary">(обязательно)</span></label><input id="payment-amount" required type="number" min="1" max="1000" step="0.01" value="10" inputmode="decimal" aria-describedby="payment-hint payment-error"><p id="payment-hint" class="small secondary">Для примера: от 1 до 1000 USD, с точностью до цента. Значение за пределами диапазона сразу заменяется ближайшей границей.</p><p id="payment-error" class="field-error" hidden></p></div>
+                <div class="field"><label for="payment-amount">Сумма, USD <span class="secondary">(обязательно)</span></label><input id="payment-amount" required type="number" min="1" max="1000" step="0.01" value="10" inputmode="decimal" aria-describedby="payment-hint payment-error"><p id="payment-hint" class="small secondary">Для примера: от 1 до 1000 USD, с точностью до цента.</p><p id="payment-error" class="field-error" hidden></p></div>
                 <div class="amount-presets" aria-label="Примеры сумм"><button class="btn" type="button" data-amount="10">10 USD</button><button class="btn" type="button" data-amount="25">25 USD</button><button class="btn" type="button" data-amount="50">50 USD</button></div>
                 <dl class="payment-summary"><div><dt>На баланс</dt><dd id="payment-credit">10,00 USD</dd></div><div><dt>Комиссия в примере</dt><dd>0,00 USD</dd></div><div class="payment-total"><dt>Итого в примере</dt><dd id="payment-total">10,00 USD</dd></div></dl>
                 <button class="btn primary" type="submit">Проверить расчёт</button><p class="small secondary">Суммы и комиссия в примере вымышлены. Платежи в витрине не проводятся.</p><p id="payment-result" class="small" role="status" hidden><svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg><span id="payment-result-text"></span></p>
@@ -287,7 +287,7 @@
             </div>
             <div class="sample-panel">
               <h3>Число с единицей</h3><p class="small secondary field-intro">Измеримая величина с известным диапазоном и шагом.</p>
-              <div class="field"><label for="fields-duration">Длительность примера, мин (обязательно)</label><div class="number-with-unit"><input id="fields-duration" type="number" inputmode="numeric" min="1" max="60" step="1" required aria-describedby="fields-duration-hint fields-duration-error"><span aria-hidden="true">мин</span></div><p id="fields-duration-hint" class="small secondary">От 1 до 60 минут, шаг 1 минута. Значение за пределами диапазона сразу заменяется ближайшей границей. Это ограничение примера, не услуги.</p><p id="fields-duration-error" class="field-message danger-text" hidden></p></div>
+              <div class="field"><label for="fields-duration">Длительность примера, мин (обязательно)</label><div class="number-with-unit"><input id="fields-duration" type="number" inputmode="numeric" min="1" max="60" step="1" required aria-describedby="fields-duration-hint fields-duration-error"><span aria-hidden="true">мин</span></div><p id="fields-duration-hint" class="small secondary">От 1 до 60 минут, шаг 1 минута. Это ограничение примера, не услуги.</p><p id="fields-duration-error" class="field-message danger-text" hidden></p></div>
               <p class="small secondary field-keyboard">Стрелки вверх и вниз меняют число на один шаг. Пустое значение отличается от нуля.</p>
             </div>
             <div class="sample-panel">
@@ -297,7 +297,7 @@
             </div>
           </div>
           <div class="button-row form-actions"><button class="btn primary" type="submit">Проверить поля</button><button class="btn ghost" type="reset">Сбросить</button></div>
-          <p class="small secondary fields-footnote">Проверка выполняется в браузере. Число ограничено указанным диапазоном; остальные неверные значения остаются в полях; ссылки в списке ошибок переводят к месту исправления.</p>
+          <p class="small secondary fields-footnote">Проверка выполняется в браузере. Ссылки в списке ошибок переводят к нужным полям.</p>
         </form>
       </section>
 

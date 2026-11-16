@@ -7,7 +7,7 @@ export const launchStatuses = ["active", "completed"] as const;
 export type LaunchStatus = (typeof launchStatuses)[number];
 export const providerStatuses = ["created", "awaiting", "working", "stopped", "completed", "failed", "deleted", "refunded"] as const;
 export type ProviderStatus = typeof providerStatuses[number] | "submitting" | "unknown" | "rejected";
-export type FollowerEstimate = { count: number; since: number | null };
+export type FollowerEstimate = { count: number; since: number | null; confirmedCount?: number };
 
 export function estimatedFollowerCount(estimate: FollowerEstimate, interval: number, now: number) {
   return estimate.count + (estimate.since === null ? 0 : Math.max(0, now - estimate.since) / (interval * 1000));
@@ -24,37 +24,41 @@ export function nextFollowerEstimate(
   const previous = order.followerEstimate;
   const running = status === "working" && interval !== null;
   if (progress?.total === order.quantity) {
-    return { count: progress.completed, since: running ? now : null };
+    return { count: progress.completed, since: running ? now : null, confirmedCount: progress.completed };
   }
   if (!previous && !running) return null;
   if (previous && (previous.since !== null) === running && interval === order.followerIntervalSeconds) return previous;
   const count = previous && order.followerIntervalSeconds !== null
     ? Math.min(order.quantity, estimatedFollowerCount(previous, order.followerIntervalSeconds, now)) : previous?.count ?? 0;
-  return { count, since: running ? now : null };
+  return { ...previous, count, since: running ? now : null };
 }
 export const finishedProviderStatuses: ProviderStatus[] = ["completed", "failed", "deleted", "refunded", "rejected"];
-export const followerInterval = { min: 10, max: 43_200, step: 5 } as const;
+export const followerInterval = { min: 1, max: 43_200, step: 1 } as const;
 export const followerControl = (status: ProviderStatus | null) =>
   status === "created" || status === "stopped" ? "start"
     : status === "awaiting" || status === "working" ? "stop" : null;
 
 export function nextTimedOrderClock(
-  order: { hours: number | null; providerStatus: ProviderStatus | null; pausedAt: Date | null; endsAt: Date },
+  order: { hours: number | null; providerStatus: ProviderStatus | null; pausedAt: Date | null; endsAt: Date; createdAt: Date },
   status: ProviderStatus,
   now: number,
 ) {
   if (!order.hours) return {};
-  if ((status === "stopped" || status === "awaiting") && order.providerStatus === "working" && !order.pausedAt) {
-    return { pausedAt: new Date(now) };
+  const initial = order.providerStatus === "submitting";
+  if ((status === "created" || status === "stopped" || status === "awaiting") && !order.pausedAt) {
+    if (initial) return { pausedAt: order.createdAt };
+    if (order.providerStatus === "working") return { pausedAt: new Date(now) };
   }
-  if (status === "working" && order.pausedAt) {
-    return { pausedAt: null, endsAt: new Date(order.endsAt.getTime() + Math.max(0, now - order.pausedAt.getTime())) };
+  if (status === "working") {
+    const heldSince = order.pausedAt ?? (initial || order.providerStatus === "created" || order.providerStatus === "awaiting" ? order.createdAt : null);
+    if (heldSince) {
+      return { pausedAt: null, endsAt: new Date(order.endsAt.getTime() + Math.max(0, now - heldSince.getTime())) };
+    }
   }
   return {};
 }
 export const isFollowerInterval = (value: number) =>
-  value >= followerInterval.min && value <= followerInterval.max &&
-  (value - followerInterval.min) % followerInterval.step === 0;
+  Number.isInteger(value) && value >= followerInterval.min && value <= followerInterval.max;
 export function clampFollowerInterval(value: string) {
   return value !== "" && Number.isFinite(Number(value))
     ? String(Math.max(followerInterval.min, Math.min(followerInterval.max, Number(value)))) : value;
@@ -92,6 +96,7 @@ export type LaunchOrder = {
   followerIntervalSeconds: number | null;
   followerFloatingInterval: boolean | null;
   followerEstimate: FollowerEstimate | null;
+  followerPreparing: boolean;
   hours: number | null;
   amountCents: number;
   providerStatus: ProviderStatus | null;

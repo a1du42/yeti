@@ -77,7 +77,10 @@ export async function commandStreamSkillPurchase(id: number, action: "start" | "
   const key = getServerEnv().STREAMSKILL_API_KEY;
   if (!key || !Number.isSafeInteger(id) || id < 1) throw new Error("Invalid StreamSkill purchase reference");
   const response = await providerRequest(key, `/purchases/${id}/${action}`, undefined, "POST");
-  if (response.ok) return "accepted";
+  if (response.ok) {
+    const body: unknown = await response.json().catch(() => null);
+    return z.object({ status: z.literal("ok") }).safeParse(body).success ? "accepted" : "unknown";
+  }
   if ([401, 404, 405, 409, 422].includes(response.status)) return "rejected";
   return "unknown";
 }
@@ -86,12 +89,56 @@ export function changeStreamSkillViewers(id: number, settings: TwitchViewerSetti
   return confirmStreamSkillAction(id, "edit-twitch-viewers", settings);
 }
 
-export async function readStreamSkillViewerChat(id: number) {
+async function readStreamSkillExpandedPurchase(id: number, expand: "api" | "chatbot") {
   const key = getServerEnv().STREAMSKILL_API_KEY;
   if (!key || !Number.isSafeInteger(id) || id < 1) throw new Error("Invalid StreamSkill purchase reference");
-  const response = await providerRequest(key, `/purchases/${id}?expand=chatbot`);
+  const response = await providerRequest(key, `/purchases/${id}?expand=${expand}`);
   if (!response.ok) throw new Error("StreamSkill purchase lookup failed");
-  const snapshot = z.object({ id: z.literal(id), chatbot: z.object({ started: z.boolean() }).nullish() }).parse(await response.json());
+  return response.json();
+}
+
+const providerViewerFields = {
+  threads: "threads",
+  stream_views: "streamViews",
+  uniq_viewers: "uniqViewers",
+  raid: "raid",
+  raid_time: "raidTime",
+  connect_time: "connectTime",
+  online_mode: "onlineMode",
+  geo: "geo",
+  geo_percent: "geoPercent",
+  manual_chart_randomization: "manualChartRandomization",
+  manual_chart_end_action: "manualChartEndAction",
+  manual_chart_end_param: "manualChartEndParam",
+} satisfies Partial<Record<keyof TwitchViewerSettings, string>>;
+
+export async function readStreamSkillViewerSettings(id: number) {
+  const { api } = z.object({
+    id: z.literal(id),
+    api: z.record(z.string(), z.unknown()).optional().catch(undefined),
+  }).parse(await readStreamSkillExpandedPurchase(id, "api"));
+  const fields: Partial<Record<keyof TwitchViewerSettings, string>> = {};
+  for (const [name, providerName] of Object.entries(providerViewerFields) as [keyof typeof providerViewerFields, string][]) {
+    const value = api?.[providerName];
+    if (typeof value === "string" || typeof value === "number") fields[name] = String(value);
+    else if (name === "raid" && typeof value === "boolean") fields.raid = value ? "on" : "off";
+  }
+  const chart = z.record(z.string().regex(/^(0|[1-9][0-9]{0,2})$/), z.number().int().nonnegative())
+    .safeParse(api?.manualChart);
+  if (chart.success) fields.manual_chart = Object.entries(chart.data).map(([minute, count]) => `${minute}: ${count}`).join("\n");
+  return fields;
+}
+
+export async function readStreamSkillViewerChat(id: number) {
+  const snapshot = z.object({
+    id: z.literal(id),
+    chatbot: z.object({
+      started: z.boolean(),
+      interval: z.number().int().optional().catch(undefined),
+      mode: z.enum(["random", "sequential"]).optional().catch(undefined),
+      messages: z.array(z.string()).nullish().catch(undefined),
+    }).nullish(),
+  }).parse(await readStreamSkillExpandedPurchase(id, "chatbot"));
   return snapshot.chatbot ?? null;
 }
 

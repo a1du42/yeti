@@ -294,7 +294,7 @@ export function LaunchPanel({ active, userId, onLaunch }: { active: boolean; use
           <div className={selected.min === selected.max ? undefined : styles.calculation}>
             {selected.min !== selected.max && <div className={styles.parameters}><div className={styles.quantityField}><label htmlFor="service-quantity">{quantityName[selected.category]}, {quantityUnit[selected.category]}</label>
               <input id="service-quantity" type="number" inputMode="numeric" min={selected.min} max={selected.max} step={1} value={quantityValue} readOnly={saving} onChange={event => changeQuantity(normalizeQuantity(event.target.value))} aria-invalid={!!quantityError} aria-describedby={quantityError ? "quantity-help quantity-error" : "quantity-help"} />
-              <p id="quantity-help" className={styles.muted}>Диапазон тарифа: {numberLabel(selected.min)}–{numberLabel(selected.max)}. За пределами диапазона подставляется ближайшая граница.{hasOrderLimit && ` ${orderLimitText}`}</p>
+              <p id="quantity-help" className={styles.muted}>Диапазон тарифа: {numberLabel(selected.min)}–{numberLabel(selected.max)}.{hasOrderLimit && ` ${orderLimitText}`}</p>
               {quantityError && <p id="quantity-error" className={styles.error}>{quantityError}</p>}
             </div>
             {requestInterval !== undefined && <FollowerInterval value={interval} pending={saving} onChange={value => {

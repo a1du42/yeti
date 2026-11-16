@@ -11,7 +11,7 @@ import { isTwitchViewerPackage } from "@/lib/twitch-viewer-settings";
 import { LaunchActions } from "./launch-actions";
 import { LaunchPreview } from "./launch-preview";
 import workspaceStyles from "./workspace.module.css";
-import styles from "./launch-history.module.css";
+import styles from "./launch-history-view.module.css";
 
 type Page = { orders: LaunchOrder[]; next: string | null; now: number };
 type ListState = { page: Page | null; error: string; loading: boolean; failedCursor: string | null };
@@ -44,19 +44,23 @@ function LaunchCard({ order, now, clockOffset, interactive, onChange, onSettings
   const real = order.providerStatus;
   const paused = real ? real === "stopped" : Boolean(order.pausedAt);
   const complete = real ? finishedProviderStatuses.includes(real) : !paused && now >= end;
+  const preparing = order.followerPreparing && !complete;
   const duration = (order.hours === null ? demoLaunchMinutes : order.hours * 60) * 60_000;
   const remaining = Math.max(0, end - (order.pausedAt ? Date.parse(order.pausedAt) : now));
   const fraction = Math.max(0, 1 - remaining / duration);
   const percent = Math.floor(Math.max(0, duration - remaining) * 100 / duration);
   const running = !real && interactive && !paused && !complete;
-  const timedHeld = order.hours !== null && Boolean(order.pausedAt) && (real === "stopped" || real === "awaiting");
+  const timedHeld = order.hours !== null && Boolean(order.pausedAt) && (real === "stopped" || real === "awaiting" || real === "created");
   const timedRemaining = usesOrderClock(order) || timedHeld ? Math.min(duration, remaining) : null;
   const timedPercent = real === "completed" && order.hours !== null ? 100
-    : timedRemaining === null ? null : Math.min(99, percent);
-  const estimatePercent = order.followerEstimate
-    ? (real === "completed" ? 100 : Math.min(99, Math.floor(
-      100 * estimatedFollowerCount(order.followerEstimate, order.followerIntervalSeconds ?? 1, now) / order.quantity,
-    ))) : null;
+    : timedRemaining === null || timedRemaining === 0 ? null : Math.min(99, percent);
+  const estimatedCount = !preparing && order.followerEstimate
+    ? estimatedFollowerCount(order.followerEstimate, order.followerIntervalSeconds ?? 1, now) : null;
+  const confirmedCount = order.followerEstimate?.confirmedCount;
+  const estimateExhausted = real !== "completed" && confirmedCount === undefined && estimatedCount !== null && estimatedCount >= order.quantity;
+  const estimatePercent = real === "completed" && order.service === "twitch-followers" ? 100
+    : confirmedCount !== undefined ? Math.floor(100 * confirmedCount / order.quantity)
+    : estimatedCount === null || estimateExhausted ? null : Math.min(99, Math.floor(100 * estimatedCount / order.quantity));
   const fill = useRef<HTMLSpanElement>(null);
   const linkText = useRef<HTMLSpanElement>(null);
 
@@ -96,14 +100,15 @@ function LaunchCard({ order, now, clockOffset, interactive, onChange, onSettings
   }, [clockOffset, duration, end, running]);
   const service = launchServiceName(order.service, order.platform, order.kind);
   const issue = real === "unknown" || real === "failed" || real === "rejected";
-  const Icon = issue ? WarningCircle : complete ? CheckCircle : paused || real === "stopped" ? PauseCircle : real && real !== "working" ? Hourglass : PlayCircle;
-  const badgeColor = issue || real === "stopped" ? styles.pausedBadge : complete ? styles.completedBadge : paused ? styles.pausedBadge : styles.runningBadge;
+  const Icon = preparing ? Hourglass : issue ? WarningCircle : complete ? CheckCircle : paused || real === "stopped" ? PauseCircle : real && real !== "working" ? Hourglass : PlayCircle;
+  const badgeColor = preparing || issue || real === "stopped" ? styles.pausedBadge : complete ? styles.completedBadge : paused ? styles.pausedBadge : styles.runningBadge;
   const category = getCatalogService(order.service)?.category ?? order.service;
   const unit = category === "chat" ? "акк." : category === "viewers" ? "чел." : "шт.";
   const hasRegion = !real && canChangeDemoRegion(order.service);
   const manageable = real ? (order.service === "twitch-followers" || isTwitchViewerPackage(order.service)) && followerControl(real) !== null
     : !complete && (hasRegion || canPauseDemoLaunch(order.service));
-  return <li className={styles.card} data-provider-order={real ? "" : undefined} data-launch-end={paused || real ? undefined : end}>
+  return <li className={styles.card} data-provider-order={real ? "" : undefined} data-follower-preparing={preparing ? "" : undefined}
+    data-launch-end={paused || real ? undefined : end}>
     <div className={styles.platform} data-platform={order.platform}>
       <span className={styles.platformName}>{platformNames[order.platform]}</span>
     </div>
@@ -111,7 +116,7 @@ function LaunchCard({ order, now, clockOffset, interactive, onChange, onSettings
       <div className={styles.cardHeader}>
         <span className={`${styles.badge} ${badgeColor}`}>
           <Icon size={16} weight="regular" aria-hidden="true" />
-          <span>{real ? providerLabels[real] : complete ? providerLabels.completed : paused ? "Пауза" : providerLabels.working}</span>
+          <span>{preparing ? "Идёт подготовка" : real ? providerLabels[real] : complete ? providerLabels.completed : paused ? "Пауза" : providerLabels.working}</span>
         </span>
         <div className={styles.resource}>
           <div className={styles.cardPreview}><LaunchPreview thumbnail={order.thumbnail} /></div>
@@ -157,26 +162,32 @@ function LaunchCard({ order, now, clockOffset, interactive, onChange, onSettings
         </span>
         <strong aria-hidden="true">{percent}%</strong>
       </div>}
-      {timedPercent !== null && <div className={styles.timedProgress}>
+      {(timedPercent !== null || timedRemaining === 0) && <div className={styles.timedProgress}>
         {timedRemaining !== null && <p className={styles.timedProgressLabel}>
-          <span>По времени заказа</span>
-          <span>{timedRemaining > 0 ? `≈ ${timeLeft(timedRemaining)} осталось` : "Ждём подтверждения завершения"}</span>
+          <span>Оценка по времени</span>
+          <span>{timedRemaining > 0 ? `≈ ${timeLeft(timedRemaining)} осталось` : "Оставшееся время неизвестно"}</span>
         </p>}
-        <div className={styles.progress}>
+        {timedPercent !== null && <div className={styles.progress}>
           <progress className="sr-only" aria-label="Прогресс по времени заказа" value={timedPercent} max={100} />
           <span className={styles.progressTrack} aria-hidden="true" data-paused={paused ? "" : undefined}
             data-running={interactive && (paused || (!timedHeld && timedRemaining !== null && timedRemaining > 0))}>
             <span className={styles.progressFill} style={{ transform: `scaleX(${timedPercent / 100})` }} />
           </span>
           <strong aria-hidden="true">{timedPercent}%</strong>
-        </div>
+        </div>}
       </div>}
-      {estimatePercent !== null && <div className={styles.progress}>
-        <progress className="sr-only" aria-label="Прогресс заказа" value={estimatePercent} max={100} />
-        <span className={styles.progressTrack} aria-hidden="true" data-estimate="" data-paused={paused ? "" : undefined} data-running={interactive && paused}>
-          <span className={styles.progressFill} style={{ transform: `scaleX(${estimatePercent / 100})` }} />
-        </span>
-        <strong aria-hidden="true">{estimatePercent}%</strong>
+      {(estimatePercent !== null || estimateExhausted) && <div className={styles.timedProgress}>
+        {real !== "completed" && <p className={styles.timedProgressLabel}>
+          {confirmedCount !== undefined ? `По последней сверке: ${confirmedCount} из ${order.quantity}`
+            : estimateExhausted ? "Число доставленных подписок пока неизвестно" : "Оценка по времени"}
+        </p>}
+        {estimatePercent !== null && <div className={styles.progress}>
+          <progress className="sr-only" aria-label={real === "completed" || confirmedCount !== undefined ? "Подтверждённый прогресс заказа" : "Оценка прогресса по времени"} value={estimatePercent} max={100} />
+          <span className={styles.progressTrack} aria-hidden="true" data-estimate="" data-paused={paused ? "" : undefined} data-running={interactive && paused}>
+            <span className={styles.progressFill} style={{ transform: `scaleX(${estimatePercent / 100})` }} />
+          </span>
+          <strong aria-hidden="true">{estimatePercent}%</strong>
+        </div>}
       </div>}
       {manageable && interactive && <LaunchActions order={order} onChange={onChange} onSettingsSaved={onSettingsSaved} />}
     </div>
@@ -192,6 +203,7 @@ export function LaunchHistory({ active, confirmed, startLink, onSettingsSaved }:
   const [lists, setLists] = useState({ active: emptyList, completed: emptyList });
   const [clockOffset, setClockOffset] = useState<number | null>(null);
   const [now, setNow] = useState(0);
+  const [pageHidden, setPageHidden] = useState(false);
   const request = useRef<AbortController | null>(null);
   const changesDuringLoad = useRef(new Map<string, LaunchOrder>());
   const activeTrigger = useRef<HTMLButtonElement>(null);
@@ -292,12 +304,21 @@ export function LaunchHistory({ active, confirmed, startLink, onSettingsSaved }:
 
   useEffect(() => {
     if (!active) return;
+    const syncVisibility = () => setPageHidden(document.hidden);
+    syncVisibility();
+    document.addEventListener("visibilitychange", syncVisibility);
     void load(tab, null);
+    let lastRefresh = performance.now();
     const timer = window.setInterval(() => {
-      if (!request.current && document.visibilityState === "visible" && activePanel.current?.querySelector("[data-provider-order]")) void load(tab, null);
-    }, 20_000);
+      if (request.current || document.hidden || tab !== "active" || !activePanel.current?.querySelector("[data-provider-order]")) return;
+      const interval = activePanel.current.querySelector("[data-follower-preparing]") ? 5_000 : 20_000;
+      if (performance.now() - lastRefresh < interval) return;
+      lastRefresh = performance.now();
+      void load(tab, null);
+    }, 5_000);
     return () => {
       window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", syncVisibility);
       const controller = request.current;
       request.current = null;
       controller?.abort();
@@ -320,8 +341,9 @@ export function LaunchHistory({ active, confirmed, startLink, onSettingsSaved }:
   }, [ticking, clockOffset, updateClock]);
 
   const createdOrder = confirmed?.autoStart ? running.find(order => order.id === confirmed.order.id) : undefined;
-  const startPending = createdOrder?.providerStatus === "created" || createdOrder?.providerStatus === "stopped";
-  return <Tabs.Root value={tab} onValueChange={value => setTab(value === "completed" ? "completed" : "active")} className={styles.history}>
+  const startPending = !createdOrder?.followerPreparing && (createdOrder?.providerStatus === "created" || createdOrder?.providerStatus === "stopped");
+  return <Tabs.Root value={tab} onValueChange={value => setTab(value === "completed" ? "completed" : "active")} className={styles.history}
+    data-page-hidden={pageHidden ? "" : undefined}>
     {startPending && <p role="status">
       {confirmed?.requestedFloating && !createdOrder.followerFloatingInterval
         ? "Разброс не подтверждён. Проверьте настройки темпа перед запуском заказа."

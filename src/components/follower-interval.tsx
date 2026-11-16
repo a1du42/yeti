@@ -24,6 +24,7 @@ export function FollowerInterval({ value, onChange, pending }: {
   const id = useId();
   const { min, max, step } = followerInterval;
   const invalid = !isFollowerInterval(Number(value));
+  const maxLabel = max.toLocaleString("ru-RU");
   return <div className={styles.quantityField}>
     <label id={`${id}-label`} htmlFor={id}>Интервал между подписками, сек.</label>
     <div className={styles.intervalControls}>
@@ -31,10 +32,10 @@ export function FollowerInterval({ value, onChange, pending }: {
         value={clampFollowerInterval(value) || min} disabled={pending} onChange={event => onChange(event.target.value)}
         aria-labelledby={`${id}-label`} aria-describedby={`${id}-help`} />
       <FollowerNumberInput id={id} min={min} max={max} step={step} value={value} readOnly={pending}
-        onValue={onChange} normalize={clampFollowerInterval}
+        onValue={value => onChange(clampFollowerInterval(value))} normalize={clampFollowerInterval}
         aria-invalid={invalid} aria-describedby={`${id}-help${invalid ? ` ${id}-error` : ""}`} />
     </div>
-    <p id={`${id}-help`} className={styles.muted}>10–43 200 сек.</p>
-    {invalid && <p id={`${id}-error`} className={styles.error}>Введите число от 10 до 43 200, кратное 5.</p>}
+    <p id={`${id}-help`} className={styles.muted}>{min}–{maxLabel} сек.</p>
+    {invalid && <p id={`${id}-error`} className={styles.error}>Введите целое число от {min} до {maxLabel}.</p>}
   </div>;
 }

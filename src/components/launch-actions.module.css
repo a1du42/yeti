@@ -45,6 +45,48 @@
   color: var(--color-text-secondary);
   cursor: default;
 }
+.actionButton[data-launch-tone="start"] {
+  --launch-ink: var(--color-success);
+  --launch-surface: var(--color-success-bg);
+}
+.actionButton[data-launch-tone="pause"] {
+  --launch-ink: var(--color-warning);
+  --launch-surface: var(--color-warning-bg);
+}
+.actionButton[data-launch-tone]:not(:disabled, [aria-disabled="true"]) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--launch-ink);
+  background: linear-gradient(110deg, var(--color-surface), var(--launch-surface));
+}
+.actionButton[data-launch-tone]:not(:disabled, [aria-disabled="true"]):active {
+  background: var(--launch-surface);
+}
+.actionButton[data-launch-tone]:not(:disabled, [aria-disabled="true"]) .actionIcon {
+  background: var(--launch-surface);
+}
+@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+  .actionButton[data-launch-tone]:not(:disabled, [aria-disabled="true"])::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 15%, color-mix(in srgb, var(--launch-ink) 10%, transparent) 50%, transparent 85%);
+    transform: translateX(-100%);
+  }
+  .actionButton[data-launch-tone]:not(:disabled, [aria-disabled="true"]):focus-visible::before {
+    animation: launchActionShimmer var(--dur-max) var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .actionButton[data-launch-tone]:not(:disabled, [aria-disabled="true"]):hover::before {
+      animation: launchActionShimmer var(--dur-max) var(--ease-out);
+    }
+  }
+}
+@keyframes launchActionShimmer {
+  to { transform: translateX(100%); }
+}
 .iconButton { justify-content: center; width: var(--size-control); padding: 0; }
 .actionError svg { flex: none; }
 .actionError { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--color-danger); }
@@ -114,6 +156,29 @@
   background: var(--color-bg);
 }
 .viewerFields { display: grid; gap: var(--space-3); min-width: 0; border: 0; padding: 0; margin: 0; }
+.viewerFields .viewerTabs { margin-block-end: var(--space-3); }
+.viewerTabs [role="tab"] { overflow-wrap: anywhere; }
+.viewerTabs[data-pointer="true"] [role="tab"]:focus-visible { outline: none; }
+.viewerPanels { position: relative; }
+.viewerPanel {
+  --viewer-fade: var(--dur-base);
+  min-width: 0;
+  opacity: 1;
+  transition: opacity var(--viewer-fade) var(--ease-out), visibility 0s;
+}
+.viewerPanel[data-state="inactive"] {
+  position: absolute;
+  inset: 0 0 auto;
+  max-height: 100%;
+  overflow: clip;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, var(--viewer-fade);
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewerPanel { --viewer-fade: var(--dur-reduced); }
+}
 .settingsGroup {
   display: grid;
   gap: var(--space-3);
@@ -135,14 +200,62 @@
 }
 .settingsGrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3) var(--space-4); }
 .settingsField { display: grid; gap: var(--space-2); min-width: 0; }
-.settingsField label { font-size: var(--text-small); font-weight: var(--font-weight-medium); line-height: var(--line-label); }
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-small);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-label);
+}
+.fieldHelp {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--size-control);
+  height: var(--size-control);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-selected-text);
+  cursor: pointer;
+}
+.fieldHelp:hover { background: var(--color-selected); }
 .fieldControl { display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
-.fieldControl small { color: var(--color-text-secondary); font-size: var(--text-small); line-height: var(--line-label); }
-.wideField, .chartFields, .chatCheckbox, .chatActions { grid-column: 1 / -1; }
+.fieldControl small, .settingsNote { color: var(--color-text-secondary); font-size: var(--text-small); line-height: var(--line-label); }
+.fieldControl .fieldError { color: var(--color-danger); }
+.settingsNote { margin: 0; }
+.numberControls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(5rem, 32%); align-items: center; gap: var(--space-3); }
+.numberControls .rangeInput {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--color-action);
+  cursor: pointer;
+}
+.numberControls .rangeInput:disabled { background: transparent; cursor: default; }
+.multiplierOptions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-1); }
+.multiplierOptions button {
+  min-height: var(--size-control);
+  padding-inline: var(--space-1);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+.multiplierOptions button:enabled:hover, .multiplierOptions button[aria-pressed="true"] {
+  background: var(--color-selected);
+  color: var(--color-selected-text);
+}
+.multiplierOptions button[aria-pressed="true"] { border-color: currentColor; }
+.multiplierOptions button:disabled, .fieldHelp:disabled { cursor: default; }
+.wideField, .chartFields, .chatActions { grid-column: 1 / -1; }
 .chartFields { display: grid; gap: var(--space-3); padding-block: var(--space-3); border-block: 1px solid var(--color-line); }
-.chartFields h4 { margin: 0; font-size: var(--text-small); font-weight: var(--font-weight-semibold); }
-.chatCheckbox { display: flex; align-items: center; gap: var(--space-2); min-height: var(--size-control); font-size: var(--text-small); cursor: pointer; }
-.chatCheckbox input { flex: none; width: var(--size-icon-small); height: var(--size-icon-small); margin: 0; accent-color: var(--color-action); }
+.chartFields h3 { margin: 0; font-size: var(--text-small); font-weight: var(--font-weight-semibold); }
 .chatActions { display: flex; }
 @media (min-width: 600px) {
   .settingsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -187,6 +300,7 @@
   }
   .settingsHeader { padding-block: var(--space-3) var(--space-2); }
   .settingsGroup { padding: var(--space-3); }
+  .viewerTabs [role="tab"] { flex-direction: column; gap: var(--space-1); padding: var(--space-2) var(--space-1); }
   .settingsFooter .dialogButtons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .settingsFooter .dialogButtons button { min-width: 0; padding-inline: var(--space-2); }
 }

@@ -54,7 +54,7 @@ export function PricingForm({ initial }: { initial: NonNullable<PricingState["se
               }} />
             <span aria-hidden="true">×</span>
           </div>
-          <small id="factor-hint">От 0,01 до 100, до двух знаков после запятой. Значения вне диапазона заменяются ближайшей границей.</small>
+          <small id="factor-hint">От 0,01 до 100, до двух знаков после запятой.</small>
           {fieldError && <p id="factor-error" className="error" role="alert">{fieldError}</p>}
         </div>
         <div><button className="button button-primary" disabled={pending || !valid || draft === settings.factor / 100}>
